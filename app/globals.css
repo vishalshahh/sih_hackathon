@@ -1,83 +1,189 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
 
-:root {
-  --background: 0 0% 100%;
-  --foreground: 210 40% 8%;
-  --card: 0 0% 100%;
-  --card-foreground: 210 40% 8%;
-  --popover: 0 0% 100%;
-  --popover-foreground: 210 40% 8%;
-  --primary: 160 84% 39%;
-  --primary-foreground: 0 0% 100%;
-  --secondary: 160 60% 45%;
-  --secondary-foreground: 0 0% 100%;
-  --muted: 0 0% 97%;
-  --muted-foreground: 210 40% 8%;
-  --accent: 160 60% 45%;
-  --accent-foreground: 0 0% 100%;
-  --destructive: 0 84% 60%;
-  --destructive-foreground: 0 0% 100%;
-  --border: 210 40% 92%;
-  --input: 0 0% 97%;
-  --ring: 160 84% 39%;
-  --chart-1: 160 84% 39%;
-  --chart-2: 160 60% 45%;
-  --chart-3: 210 40% 8%;
-  --chart-4: 180 100% 98%;
-  --chart-5: 0 0% 97%;
+@theme {
+  /* Subtle, professional color palette */
+  --color-background: 0 0% 100%;
+  --color-foreground: 220 13% 18%;
+  --color-card: 0 0% 100%;
+  --color-card-foreground: 220 13% 18%;
+  --color-popover: 0 0% 100%;
+  --color-popover-foreground: 220 13% 18%;
+  --color-primary: 220 14% 96%;
+  --color-primary-foreground: 220 13% 18%;
+  --color-secondary: 220 14% 96%;
+  --color-secondary-foreground: 220 13% 18%;
+  --color-muted: 220 14% 96%;
+  --color-muted-foreground: 220 9% 46%;
+  --color-accent: 220 14% 96%;
+  --color-accent-foreground: 220 13% 18%;
+  --color-destructive: 0 84% 60%;
+  --color-destructive-foreground: 0 0% 100%;
+  --color-border: 220 13% 91%;
+  --color-input: 220 13% 91%;
+  --color-ring: 220 13% 18%;
+  --color-chart-1: 220 14% 96%;
+  --color-chart-2: 220 9% 46%;
+  --color-chart-3: 220 13% 18%;
+  --color-chart-4: 220 14% 96%;
+  --color-chart-5: 220 9% 46%;
   --radius: 0.5rem;
-  --sidebar: 0 0% 100%;
-  --sidebar-foreground: 210 40% 8%;
-  --sidebar-primary: 160 84% 39%;
-  --sidebar-primary-foreground: 0 0% 100%;
-  --sidebar-accent: 160 60% 45%;
-  --sidebar-accent-foreground: 0 0% 100%;
-  --sidebar-border: 210 40% 92%;
-  --sidebar-ring: 160 84% 39%;
+  --color-sidebar: 0 0% 100%;
+  --color-sidebar-foreground: 220 13% 18%;
+  --color-sidebar-primary: 220 14% 96%;
+  --color-sidebar-primary-foreground: 220 13% 18%;
+  --color-sidebar-accent: 220 14% 96%;
+  --color-sidebar-accent-foreground: 220 13% 18%;
+  --color-sidebar-border: 220 13% 91%;
+  --color-sidebar-ring: 220 13% 18%;
 }
 
-.dark {
-  --background: 0 0% 12%;
-  --foreground: 0 0% 95%;
-  --card: 0 0% 15%;
-  --card-foreground: 0 0% 95%;
-  --popover: 0 0% 15%;
-  --popover-foreground: 0 0% 95%;
-  --primary: 160 60% 45%;
-  --primary-foreground: 0 0% 12%;
-  --secondary: 0 0% 25%;
-  --secondary-foreground: 0 0% 95%;
-  --muted: 0 0% 25%;
-  --muted-foreground: 0 0% 65%;
-  --accent: 0 0% 25%;
-  --accent-foreground: 0 0% 95%;
-  --destructive: 0 62% 50%;
-  --destructive-foreground: 0 0% 95%;
-  --border: 0 0% 25%;
-  --input: 0 0% 25%;
-  --ring: 160 60% 45%;
-  --chart-1: 160 60% 45%;
-  --chart-2: 160 75% 55%;
-  --chart-3: 160 90% 65%;
-  --chart-4: 160 60% 45%;
-  --chart-5: 160 40% 35%;
-  --sidebar: 0 0% 18%;
-  --sidebar-foreground: 0 0% 95%;
-  --sidebar-primary: 160 60% 45%;
-  --sidebar-primary-foreground: 0 0% 95%;
-  --sidebar-accent: 0 0% 25%;
-  --sidebar-accent-foreground: 0 0% 95%;
-  --sidebar-border: 0 0% 25%;
-  --sidebar-ring: 160 60% 45%;
+@theme dark {
+  --color-background: 220 13% 9%;
+  --color-foreground: 220 9% 95%;
+  --color-card: 220 13% 9%;
+  --color-card-foreground: 220 9% 95%;
+  --color-popover: 220 13% 9%;
+  --color-popover-foreground: 220 9% 95%;
+  --color-primary: 220 13% 9%;
+  --color-primary-foreground: 220 9% 95%;
+  --color-secondary: 220 13% 9%;
+  --color-secondary-foreground: 220 9% 95%;
+  --color-muted: 220 13% 9%;
+  --color-muted-foreground: 220 9% 65%;
+  --color-accent: 220 13% 9%;
+  --color-accent-foreground: 220 9% 95%;
+  --color-destructive: 0 62% 50%;
+  --color-destructive-foreground: 220 9% 95%;
+  --color-border: 220 13% 9%;
+  --color-input: 220 13% 9%;
+  --color-ring: 220 9% 95%;
+  --color-chart-1: 220 13% 9%;
+  --color-chart-2: 220 9% 65%;
+  --color-chart-3: 220 9% 95%;
+  --color-chart-4: 220 13% 9%;
+  --color-chart-5: 220 9% 65%;
+  --color-sidebar: 220 13% 9%;
+  --color-sidebar-foreground: 220 9% 95%;
+  --color-sidebar-primary: 220 13% 9%;
+  --color-sidebar-primary-foreground: 220 9% 95%;
+  --color-sidebar-accent: 220 13% 9%;
+  --color-sidebar-accent-foreground: 220 9% 95%;
+  --color-sidebar-border: 220 13% 9%;
+  --color-sidebar-ring: 220 9% 95%;
 }
 
 @layer base {
   * {
     @apply border-border;
   }
-  body {
-    @apply bg-background text-foreground;
+  
+  html {
+    scroll-behavior: smooth;
   }
+  
+  body {
+    @apply bg-background text-foreground font-sans antialiased;
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
+  
+  /* Subtle focus styles */
+  *:focus-visible {
+    @apply outline-none ring-2 ring-ring ring-offset-2 ring-offset-background;
+  }
+  
+  /* Smooth transitions for all interactive elements */
+  button, a, [role="button"], input, textarea, select {
+    @apply transition-all duration-200 ease-out;
+  }
+  
+  /* Subtle hover effects */
+  .hover-subtle {
+    @apply transition-all duration-200 ease-out hover:bg-muted/50 hover:shadow-sm;
+  }
+  
+  .hover-lift {
+    @apply transition-all duration-200 ease-out hover:-translate-y-0.5 hover:shadow-md;
+  }
+  
+  /* Professional button styles */
+  .btn-professional {
+    @apply transition-all duration-200 ease-out hover:bg-muted/80 hover:shadow-sm active:scale-[0.98];
+  }
+  
+  /* Card hover effects */
+  .card-hover {
+    @apply transition-all duration-300 ease-out hover:shadow-lg hover:border-border/50;
+  }
+  
+  /* Text hover effects */
+  .text-hover {
+    @apply transition-colors duration-200 ease-out hover:text-foreground/80;
+  }
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  @apply bg-muted/30;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-muted-foreground/30 rounded-full;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  @apply bg-muted-foreground/50;
+}
+
+/* Selection styles */
+::selection {
+  @apply bg-primary/20 text-foreground;
+}
+
+/* Custom animation keyframes */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateX(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.8;
+  }
+}
+
+/* Animation utility classes */
+.animate-fade-in {
+  animation: fadeIn 0.4s ease-out;
+}
+
+.animate-slide-in {
+  animation: slideIn 0.3s ease-out;
+}
+
+.animate-pulse-subtle {
+  animation: pulse 2s ease-in-out infinite;
 }

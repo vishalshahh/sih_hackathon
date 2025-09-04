@@ -93,14 +93,14 @@ export function DrugDataDisplay() {
   }
 
   return (
-    <div className="space-y-6">
-      <Card>
+    <div className="space-y-6 w-full">
+      <Card className="card-hover">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Pill className="h-5 w-5" />
+          <CardTitle className="flex items-center gap-2 text-xl">
+            <Pill className="h-5 w-5 text-primary" />
             Real-time Drug Information
           </CardTitle>
-          <CardDescription>
+          <CardDescription className="text-base">
             Search for drug information, recalls, and interactions using OpenFDA database
           </CardDescription>
         </CardHeader>
@@ -113,7 +113,11 @@ export function DrugDataDisplay() {
               onKeyPress={handleKeyPress}
               className="flex-1"
             />
-            <Button onClick={searchDrug} disabled={loading || !drugName.trim()}>
+            <Button 
+              onClick={searchDrug} 
+              disabled={loading || !drugName.trim()}
+              className="btn-professional"
+            >
               {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Search className="h-4 w-4" />}
               Search
             </Button>
@@ -129,39 +133,39 @@ export function DrugDataDisplay() {
       )}
 
       {drugInfo && (
-        <Tabs defaultValue="info" className="space-y-4">
-          <TabsList>
+        <Tabs defaultValue="info" className="space-y-4 w-full">
+          <TabsList className="grid w-full grid-cols-3">
             <TabsTrigger value="info">Drug Information</TabsTrigger>
             <TabsTrigger value="recalls">Safety Recalls</TabsTrigger>
             <TabsTrigger value="interactions">Interactions</TabsTrigger>
           </TabsList>
 
           <TabsContent value="info" className="space-y-4">
-            <Card>
+            <Card className="card-hover">
               <CardHeader>
                 <CardTitle className="flex items-center justify-between">
-                  {drugInfo.name}
-                  <Badge variant="secondary">{drugInfo.genericName}</Badge>
+                  <span className="text-xl">{drugInfo.name}</span>
+                  <Badge variant="secondary" className="text-sm">{drugInfo.genericName}</Badge>
                 </CardTitle>
-                <CardDescription>Manufacturer: {drugInfo.manufacturer}</CardDescription>
+                <CardDescription className="text-base">Manufacturer: {drugInfo.manufacturer}</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div>
-                  <h4 className="font-semibold mb-2">Description</h4>
+                  <h4 className="font-semibold mb-2 text-base">Description</h4>
                   <p className="text-sm text-muted-foreground">{drugInfo.description}</p>
                 </div>
 
                 <div>
-                  <h4 className="font-semibold mb-2">Dosage</h4>
+                  <h4 className="font-semibold mb-2 text-base">Dosage</h4>
                   <p className="text-sm text-muted-foreground">{drugInfo.dosage}</p>
                 </div>
 
                 {drugInfo.activeIngredients && drugInfo.activeIngredients.length > 0 && (
                   <div>
-                    <h4 className="font-semibold mb-2">Active Ingredients</h4>
+                    <h4 className="font-semibold mb-2 text-base">Active Ingredients</h4>
                     <div className="flex flex-wrap gap-1">
                       {drugInfo.activeIngredients.map((ingredient, index) => (
-                        <Badge key={index} variant="outline">{ingredient}</Badge>
+                        <Badge key={index} variant="outline" className="text-xs">{ingredient}</Badge>
                       ))}
                     </div>
                   </div>
@@ -169,7 +173,7 @@ export function DrugDataDisplay() {
 
                 {drugInfo.sideEffects && drugInfo.sideEffects.length > 0 && (
                   <div>
-                    <h4 className="font-semibold mb-2">Side Effects</h4>
+                    <h4 className="font-semibold mb-2 text-base">Side Effects</h4>
                     <ul className="text-sm text-muted-foreground list-disc list-inside">
                       {drugInfo.sideEffects.map((effect, index) => (
                         <li key={index}>{effect}</li>
@@ -180,7 +184,7 @@ export function DrugDataDisplay() {
 
                 {drugInfo.warnings && drugInfo.warnings.length > 0 && (
                   <div>
-                    <h4 className="font-semibold mb-2 text-amber-600">Warnings</h4>
+                    <h4 className="font-semibold mb-2 text-base text-amber-600">Warnings</h4>
                     <ul className="text-sm text-amber-700 list-disc list-inside">
                       {drugInfo.warnings.map((warning, index) => (
                         <li key={index}>{warning}</li>
@@ -205,13 +209,13 @@ export function DrugDataDisplay() {
           </TabsContent>
 
           <TabsContent value="recalls" className="space-y-4">
-            <Card>
+            <Card className="card-hover">
               <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <AlertTriangle className="h-5 w-5" />
+                <CardTitle className="flex items-center gap-2 text-xl">
+                  <AlertTriangle className="h-5 w-5 text-red-500" />
                   Safety Recalls & Events
                 </CardTitle>
-                <CardDescription>
+                <CardDescription className="text-base">
                   Recent safety events and recalls for {drugInfo.name}
                 </CardDescription>
               </CardHeader>
@@ -221,7 +225,7 @@ export function DrugDataDisplay() {
                 ) : (
                   <div className="space-y-3">
                     {recalls.slice(0, 5).map((recall, index) => (
-                      <div key={index} className="border rounded-lg p-3">
+                      <div key={index} className="border rounded-lg p-3 hover-subtle">
                         <div className="flex items-center justify-between mb-2">
                           <Badge variant="destructive">{recall.event_type}</Badge>
                           <span className="text-xs text-muted-foreground">
@@ -244,13 +248,13 @@ export function DrugDataDisplay() {
           </TabsContent>
 
           <TabsContent value="interactions" className="space-y-4">
-            <Card>
+            <Card className="card-hover">
               <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Activity className="h-5 w-5" />
+                <CardTitle className="flex items-center gap-2 text-xl">
+                  <Activity className="h-5 w-5 text-orange-500" />
                   Drug Interactions
                 </CardTitle>
-                <CardDescription>
+                <CardDescription className="text-base">
                   Known interactions for {drugInfo.name}
                 </CardDescription>
               </CardHeader>
@@ -260,7 +264,7 @@ export function DrugDataDisplay() {
                 ) : (
                   <div className="space-y-3">
                     {interactions.map((interaction, index) => (
-                      <div key={index} className="border rounded-lg p-3">
+                      <div key={index} className="border rounded-lg p-3 hover-subtle">
                         <h4 className="font-semibold mb-2">Drug: {interaction.drug}</h4>
                         <ul className="text-sm text-muted-foreground list-disc list-inside">
                           {interaction.interactions.map((int: string, idx: number) => (

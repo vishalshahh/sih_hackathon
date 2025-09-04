@@ -6,14 +6,10 @@ import { Badge } from "@/components/ui/badge"
 import { 
   Stethoscope, 
   Pill, 
-  Activity, 
-  Shield, 
-  Heart, 
-  Brain, 
-  Baby, 
   Calendar,
   AlertTriangle,
-  Search
+  Search,
+  ArrowRight
 } from "lucide-react"
 import { getTranslation } from "@/lib/translations"
 
@@ -27,6 +23,8 @@ export function QuickActions({ onActionSelect, language }: QuickActionsProps) {
     {
       category: "Drug Information",
       icon: <Pill className="h-4 w-4" />,
+      color: "text-blue-600",
+      bgColor: "bg-blue-50",
       actions: [
         "Tell me about aspirin",
         "What is ibuprofen?",
@@ -39,6 +37,8 @@ export function QuickActions({ onActionSelect, language }: QuickActionsProps) {
     {
       category: "Symptoms",
       icon: <Stethoscope className="h-4 w-4" />,
+      color: "text-green-600",
+      bgColor: "bg-green-50",
       actions: [
         "I have a fever",
         "Chest pain symptoms",
@@ -51,6 +51,8 @@ export function QuickActions({ onActionSelect, language }: QuickActionsProps) {
     {
       category: "Emergency",
       icon: <AlertTriangle className="h-4 w-4" />,
+      color: "text-red-600",
+      bgColor: "bg-red-50",
       actions: [
         "Emergency help",
         "Chest pain emergency",
@@ -62,6 +64,8 @@ export function QuickActions({ onActionSelect, language }: QuickActionsProps) {
     {
       category: "Health Services",
       icon: <Calendar className="h-4 w-4" />,
+      color: "text-purple-600",
+      bgColor: "bg-purple-50",
       actions: [
         "Find doctors near me",
         "Book appointment",
@@ -73,31 +77,36 @@ export function QuickActions({ onActionSelect, language }: QuickActionsProps) {
   ]
 
   return (
-    <div className="space-y-4">
-      <Card>
-        <CardHeader className="pb-3">
-          <CardTitle className="text-lg flex items-center gap-2">
-            <Search className="h-5 w-5" />
+    <div className="space-y-6 h-full">
+      <Card className="card-hover h-fit">
+        <CardHeader className="pb-4">
+          <CardTitle className="text-lg flex items-center gap-2 text-foreground">
+            <Search className="h-5 w-5 text-muted-foreground" />
             Quick Actions
           </CardTitle>
         </CardHeader>
-        <CardContent className="space-y-4">
+        <CardContent className="space-y-6">
           {quickActions.map((category, categoryIndex) => (
-            <div key={categoryIndex} className="space-y-2">
-              <div className="flex items-center gap-2">
-                {category.icon}
-                <h3 className="font-semibold text-sm">{category.category}</h3>
+            <div key={categoryIndex} className="space-y-3">
+              <div className="flex items-center gap-3">
+                <div className={`p-2 rounded-lg ${category.bgColor} ${category.color}`}>
+                  {category.icon}
+                </div>
+                <h3 className="font-medium text-sm text-foreground">
+                  {category.category}
+                </h3>
               </div>
-              <div className="space-y-1">
+              <div className="grid gap-1">
                 {category.actions.map((action, actionIndex) => (
                   <Button
                     key={actionIndex}
-                    variant="outline"
+                    variant="ghost"
                     size="sm"
-                    className="w-full justify-start text-xs h-auto py-2 px-3 text-left"
+                    className="w-full justify-start text-xs h-auto py-2 px-3 text-left hover-subtle group text-left"
                     onClick={() => onActionSelect(action)}
                   >
-                    <span className="truncate">{action}</span>
+                    <span className="truncate flex-1 text-left">{action}</span>
+                    <ArrowRight className="h-3 w-3 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex-shrink-0" />
                   </Button>
                 ))}
               </div>
@@ -107,15 +116,15 @@ export function QuickActions({ onActionSelect, language }: QuickActionsProps) {
       </Card>
 
       {/* Drug Search Examples */}
-      <Card>
-        <CardHeader className="pb-3">
-          <CardTitle className="text-lg flex items-center gap-2">
-            <Pill className="h-5 w-5" />
-            Popular Drug Searches
+      <Card className="card-hover h-fit">
+        <CardHeader className="pb-4">
+          <CardTitle className="text-lg flex items-center gap-2 text-foreground">
+            <Pill className="h-5 w-5 text-muted-foreground" />
+            Popular Searches
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="space-y-2">
+          <div className="grid gap-1">
             {[
               "Aspirin information",
               "Ibuprofen side effects", 
@@ -128,10 +137,11 @@ export function QuickActions({ onActionSelect, language }: QuickActionsProps) {
                 key={index}
                 variant="ghost"
                 size="sm"
-                className="w-full justify-start text-xs h-auto py-1 px-2 text-left"
+                className="w-full justify-start text-xs h-auto py-2 px-3 text-left hover-subtle group text-left"
                 onClick={() => onActionSelect(search)}
               >
-                <span className="truncate">{search}</span>
+                <span className="truncate flex-1 text-left">{search}</span>
+                <ArrowRight className="h-3 w-3 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex-shrink-0" />
               </Button>
             ))}
           </div>

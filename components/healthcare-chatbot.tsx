@@ -162,19 +162,19 @@ export function HealthcareChatbot() {
   const isRTLLanguage = isRTL(selectedLanguage)
 
   return (
-    <div className={`grid grid-cols-1 lg:grid-cols-4 gap-6 ${isRTLLanguage ? "rtl" : "ltr"}`}>
+    <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 w-full">
       {/* Quick Actions Sidebar */}
       <div className="lg:col-span-1 hidden lg:block">
         <QuickActions onActionSelect={(action) => setInputValue(action)} language={selectedLanguage} />
       </div>
 
       {/* Main Chat Interface */}
-      <div className="lg:col-span-3">
-        <Card className="h-[600px] flex flex-col pl-2">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
-            <CardTitle className="flex items-center gap-2">
+      <div className="lg:col-span-3 w-full">
+        <Card className="h-[600px] flex flex-col">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4 border-b">
+            <CardTitle className="flex items-center gap-2 text-lg">
               <Stethoscope className="w-5 h-5 text-primary" />
-              {getTranslation(selectedLanguage, "ui.title")}
+              AI Healthcare Assistant
             </CardTitle>
             <LanguageSelector selectedLanguage={selectedLanguage} onLanguageChange={setSelectedLanguage} />
           </CardHeader>
@@ -202,14 +202,14 @@ export function HealthcareChatbot() {
                       )}
 
                       <div
-                        className={`max-w-[80%] min-w-0 rounded-lg px-4 py-2 ${
+                        className={`max-w-[75%] min-w-0 rounded-lg px-4 py-3 ${
                           message.type === "user"
                             ? "bg-primary text-primary-foreground"
                             : "bg-muted text-muted-foreground"
                         }`}
                         style={{ direction: isRTLLanguage ? "rtl" : "ltr" }}
                       >
-                        <p className="text-sm whitespace-pre-line break-words overflow-wrap-anywhere hyphens-auto">{message.content}</p>
+                        <p className="text-sm whitespace-pre-line break-words">{message.content}</p>
                         <div className="flex items-center gap-2 mt-2 flex-wrap">
                           <span className="text-xs opacity-70">{message.timestamp.toLocaleTimeString()}</span>
                           {message.intent && message.type === "bot" && (
@@ -247,7 +247,7 @@ export function HealthcareChatbot() {
 
                     {/* Detected Entities */}
                     {message.entities && message.entities.length > 0 && (
-                      <div className="flex flex-wrap gap-1 max-w-[80%]">
+                      <div className="flex flex-wrap gap-1 max-w-[75%]">
                         {message.entities.map((entity, index) => (
                           <Badge key={index} variant="outline" className="text-xs break-words">
                             {entity.type}: {entity.value}
@@ -258,7 +258,7 @@ export function HealthcareChatbot() {
 
                     {/* Drug Information Display */}
                     {message.drugInfo && message.type === "bot" && (
-                      <div className="max-w-[80%] min-w-0">
+                      <div className="max-w-[75%] min-w-0">
                         <Card className="w-full">
                           <CardHeader className="pb-3">
                             <CardTitle className="flex items-center gap-2 text-lg">
@@ -333,7 +333,7 @@ export function HealthcareChatbot() {
 
                     {/* Drug Interactions Display */}
                     {message.drugInteractions && message.drugInteractions.length > 0 && message.type === "bot" && (
-                      <div className="max-w-[80%] min-w-0">
+                      <div className="max-w-[75%] min-w-0">
                         <Card className="w-full">
                           <CardHeader className="pb-3">
                             <CardTitle className="flex items-center gap-2 text-lg">
@@ -362,7 +362,7 @@ export function HealthcareChatbot() {
 
                     {/* Drug Recalls Display */}
                     {message.drugRecalls && message.drugRecalls.length > 0 && message.type === "bot" && (
-                      <div className="max-w-[80%] min-w-0">
+                      <div className="max-w-[75%] min-w-0">
                         <Card className="w-full">
                           <CardHeader className="pb-3">
                             <CardTitle className="flex items-center gap-2 text-lg">
@@ -397,10 +397,10 @@ export function HealthcareChatbot() {
 
                     {/* Recommended Actions */}
                     {message.recommendedActions && message.recommendedActions.length > 0 && (
-                      <div className="max-w-[80%] min-w-0">
+                      <div className="max-w-[75%] min-w-0">
                         <Alert className="w-full">
                           <Info className="h-4 w-4 flex-shrink-0" />
-                          <AlertDescription className="break-words overflow-wrap-anywhere hyphens-auto">
+                          <AlertDescription className="break-words">
                             <strong>Recommended Actions:</strong>
                             <ul className="list-disc list-inside mt-1 space-y-1">
                               {message.recommendedActions.map((action, index) => (
@@ -416,7 +416,7 @@ export function HealthcareChatbot() {
 
                     {/* Follow-up Questions */}
                     {message.followUpQuestions && message.followUpQuestions.length > 0 && (
-                      <div className="ml-11 space-y-2 max-w-[80%] min-w-0">
+                      <div className="ml-11 space-y-2 max-w-[75%] min-w-0">
                         <p className="text-sm font-medium text-muted-foreground">Follow-up questions:</p>
                         <div className="flex flex-wrap gap-2">
                           {message.followUpQuestions.map((question, index) => (
@@ -424,10 +424,10 @@ export function HealthcareChatbot() {
                               key={index}
                               variant="outline"
                               size="sm"
-                              className="text-xs h-auto py-1 px-2 bg-transparent break-words max-w-full min-w-0"
+                              className="text-xs h-auto py-1 px-2 bg-transparent break-words max-w-full min-w-0 hover-subtle"
                               onClick={() => handleFollowUpQuestion(question)}
                             >
-                              <span className="break-words overflow-wrap-anywhere">{question}</span>
+                              <span className="break-words">{question}</span>
                             </Button>
                           ))}
                         </div>
@@ -436,10 +436,10 @@ export function HealthcareChatbot() {
 
                     {/* Disclaimers */}
                     {message.disclaimers && message.disclaimers.length > 0 && (
-                      <div className="max-w-[80%] min-w-0">
+                      <div className="max-w-[75%] min-w-0">
                         <Alert variant="destructive" className="w-full">
                           <AlertTriangle className="h-4 w-4 flex-shrink-0" />
-                          <AlertDescription className="break-words overflow-wrap-anywhere hyphens-auto">
+                          <AlertDescription className="break-words">
                             <strong>Important:</strong>
                             <ul className="list-disc list-inside mt-1 space-y-1">
                               {message.disclaimers.map((disclaimer, index) => (
@@ -460,7 +460,7 @@ export function HealthcareChatbot() {
                     <div className="flex items-center justify-center w-8 h-8 bg-primary rounded-full">
                       <Bot className="w-4 h-4 text-primary-foreground" />
                     </div>
-                    <div className="bg-muted rounded-lg px-4 py-2">
+                    <div className="bg-muted rounded-lg px-4 py-3">
                       <div className="flex gap-1">
                         <div className="w-2 h-2 bg-muted-foreground rounded-full animate-bounce" />
                         <div
@@ -491,7 +491,12 @@ export function HealthcareChatbot() {
                   className="flex-1 min-w-0"
                   style={{ direction: isRTLLanguage ? "rtl" : "ltr" }}
                 />
-                <Button onClick={handleSendMessage} disabled={!inputValue.trim() || isTyping} size="icon" className="flex-shrink-0">
+                <Button 
+                  onClick={handleSendMessage} 
+                  disabled={!inputValue.trim() || isTyping} 
+                  size="icon" 
+                  className="flex-shrink-0 btn-professional"
+                >
                   <Send className="w-4 h-4" />
                 </Button>
               </div>

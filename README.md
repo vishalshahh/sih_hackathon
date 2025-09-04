@@ -354,6 +354,6 @@ For support and questions:
 
 ---
 
-**Built with ❤️ by Vishy[vishy.dev]**
+**Built with ❤️ by Vishy [https://vishy.dev/]]**
 
 *This application is designed to provide general health information and should not replace professional medical advice. Always consult healthcare professionals for medical concerns.*

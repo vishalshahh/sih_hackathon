@@ -4520,7 +4520,7 @@ We invite healthcare professionals, developers, researchers, and organizations t
 
 ---
 
-**Built with ❤️ for the Smart India Hackathon[vishy.dev]**
+**Built with ❤️ for the Smart India Hackathon[https://vishy.dev/]**
 
 *This application is designed to provide general health information and should not replace professional medical advice. Always consult healthcare professionals for medical concerns.*
 
@@ -4530,12 +4530,6 @@ We invite healthcare professionals, developers, researchers, and organizations t
 
 - **Live Demo**: [https://healthcare-chatbot.vercel.app](https://healthcare-chatbot.vercel.app)
 - **GitHub Repository**: [https://github.com/vishalshahh/sih_hackathon](https://github.com/vishalshahh/sih_hackathon)
-- **Documentation**: [https://docs.healthcare-chatbot.com](https://docs.healthcare-chatbot.com)
-- **API Reference**: [https://api.healthcare-chatbot.com/docs](https://api.healthcare-chatbot.com/docs)
-- **Admin Dashboard**: [https://admin.healthcare-chatbot.com](https://admin.healthcare-chatbot.com)
-- **Support Center**: [https://support.healthcare-chatbot.com](https://support.healthcare-chatbot.com)
-- **Community Forum**: [https://community.healthcare-chatbot.com](https://community.healthcare-chatbot.com)
-- **Status Page**: [https://status.healthcare-chatbot.com](https://status.healthcare-chatbot.com)
 
 ---
 

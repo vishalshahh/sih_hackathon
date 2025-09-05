@@ -8,56 +8,38 @@ import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { AlertTriangle, Plus, Send, Clock, MapPin, Users } from "lucide-react"
-
-const mockEmergencyAlerts = [
-  {
-    id: "alert_001",
-    title: "Dengue Outbreak Alert",
-    description: "Increased dengue cases reported in urban areas. Take preventive measures.",
-    severity: "high",
-    location: "Mumbai, Maharashtra",
-    affectedUsers: 15000,
-    createdAt: "2024-01-15T08:00:00Z",
-    status: "active",
-    responses: 1250,
-  },
-  {
-    id: "alert_002",
-    title: "Seasonal Flu Advisory",
-    description: "Flu season is active. Get vaccinated and follow hygiene protocols.",
-    severity: "medium",
-    location: "National",
-    affectedUsers: 50000,
-    createdAt: "2024-01-14T12:00:00Z",
-    status: "active",
-    responses: 3200,
-  },
-  {
-    id: "alert_003",
-    title: "Air Quality Warning",
-    description: "Poor air quality levels detected. Limit outdoor activities.",
-    severity: "medium",
-    location: "Delhi NCR",
-    affectedUsers: 8500,
-    createdAt: "2024-01-13T18:00:00Z",
-    status: "resolved",
-    responses: 890,
-  },
-]
+import { MockDataService } from "@/lib/mock-data-service"
 
 export function EmergencyAlerts() {
   const [isCreatingAlert, setIsCreatingAlert] = useState(false)
   const [newAlert, setNewAlert] = useState({
     title: "",
-    description: "",
+    message: "",
     severity: "medium",
     location: "",
+    affectedAreas: ""
   })
+
+  const mockEmergencyAlerts = MockDataService.getEmergencyAlertData()
+
+  const handleCreateAlert = () => {
+    console.log("Creating alert:", newAlert)
+    setIsCreatingAlert(false)
+    setNewAlert({
+      title: "",
+      message: "",
+      severity: "medium",
+      location: "",
+      affectedAreas: ""
+    })
+  }
 
   const getSeverityColor = (severity: string) => {
     switch (severity) {
-      case "high":
+      case "critical":
         return "bg-red-100 text-red-800 border-red-200"
+      case "high":
+        return "bg-orange-100 text-orange-800 border-orange-200"
       case "medium":
         return "bg-yellow-100 text-yellow-800 border-yellow-200"
       case "low":
@@ -70,34 +52,76 @@ export function EmergencyAlerts() {
   const getStatusColor = (status: string) => {
     switch (status) {
       case "active":
-        return "bg-green-100 text-green-800"
+        return "bg-red-100 text-red-800"
       case "resolved":
+        return "bg-green-100 text-green-800"
+      case "cancelled":
         return "bg-gray-100 text-gray-800"
-      case "draft":
-        return "bg-blue-100 text-blue-800"
       default:
         return "bg-gray-100 text-gray-800"
     }
   }
 
-  const handleCreateAlert = () => {
-    // Handle alert creation logic here
-    console.log("Creating alert:", newAlert)
-    setIsCreatingAlert(false)
-    setNewAlert({ title: "", description: "", severity: "medium", location: "" })
+  const formatTimestamp = (timestamp: string) => {
+    return new Date(timestamp).toLocaleString()
   }
+
+  const activeAlerts = mockEmergencyAlerts.filter(alert => alert.status === 'active').length
+  const totalAlerts = mockEmergencyAlerts.length
 
   return (
     <div className="space-y-4 sm:space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h2 className="text-xl sm:text-2xl font-bold">Emergency Alerts</h2>
-          <p className="text-sm sm:text-base text-muted-foreground">Manage and broadcast emergency health alerts to users</p>
+          <h2 className="text-lg sm:text-xl font-semibold">Emergency Alerts</h2>
+          <p className="text-sm text-muted-foreground">
+            Manage emergency health alerts and notifications
+          </p>
         </div>
-        <Button onClick={() => setIsCreatingAlert(true)} className="text-sm">
-          <Plus className="w-4 h-4 mr-2" />
+        <Button onClick={() => setIsCreatingAlert(true)}>
+          <Plus className="h-4 w-4 mr-2" />
           Create Alert
         </Button>
+      </div>
+
+      {/* Stats */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <Card>
+          <CardContent className="pt-6">
+            <div className="flex items-center">
+              <AlertTriangle className="h-8 w-8 text-red-600" />
+              <div className="ml-4">
+                <p className="text-sm font-medium text-muted-foreground">Active Alerts</p>
+                <p className="text-2xl font-bold text-red-600">{activeAlerts}</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="pt-6">
+            <div className="flex items-center">
+              <Clock className="h-8 w-8 text-blue-600" />
+              <div className="ml-4">
+                <p className="text-sm font-medium text-muted-foreground">Total Alerts</p>
+                <p className="text-2xl font-bold">{totalAlerts}</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="pt-6">
+            <div className="flex items-center">
+              <Users className="h-8 w-8 text-green-600" />
+              <div className="ml-4">
+                <p className="text-sm font-medium text-muted-foreground">Affected Users</p>
+                <p className="text-2xl font-bold">
+                  {mockEmergencyAlerts.reduce((acc, alert) => acc + alert.affectedAreas.length * 1000, 0).toLocaleString()}
+                </p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
       </div>
 
       {/* Create Alert Form */}
@@ -109,56 +133,64 @@ export function EmergencyAlerts() {
           <CardContent className="space-y-4">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label className="text-sm font-medium mb-2 block">Alert Title</label>
+                <label className="text-sm font-medium">Title</label>
                 <Input
-                  placeholder="Enter alert title"
                   value={newAlert.title}
-                  onChange={(e) => setNewAlert({ ...newAlert, title: e.target.value })}
+                  onChange={(e) => setNewAlert({...newAlert, title: e.target.value})}
+                  placeholder="Alert title"
+                  className="mt-1"
                 />
               </div>
               <div>
-                <label className="text-sm font-medium mb-2 block">Severity</label>
+                <label className="text-sm font-medium">Severity</label>
                 <select
-                  className="w-full p-2 border border-input rounded-md text-sm"
                   value={newAlert.severity}
-                  onChange={(e) => setNewAlert({ ...newAlert, severity: e.target.value })}
+                  onChange={(e) => setNewAlert({...newAlert, severity: e.target.value})}
+                  className="mt-1 w-full px-3 py-2 border rounded-md"
                 >
                   <option value="low">Low</option>
                   <option value="medium">Medium</option>
                   <option value="high">High</option>
+                  <option value="critical">Critical</option>
                 </select>
               </div>
             </div>
-            
             <div>
-              <label className="text-sm font-medium mb-2 block">Location</label>
-              <Input
-                placeholder="Enter affected location"
-                value={newAlert.location}
-                onChange={(e) => setNewAlert({ ...newAlert, location: e.target.value })}
-              />
-            </div>
-            
-            <div>
-              <label className="text-sm font-medium mb-2 block">Description</label>
+              <label className="text-sm font-medium">Message</label>
               <Textarea
-                placeholder="Enter alert description"
-                value={newAlert.description}
-                onChange={(e) => setNewAlert({ ...newAlert, description: e.target.value })}
+                value={newAlert.message}
+                onChange={(e) => setNewAlert({...newAlert, message: e.target.value})}
+                placeholder="Alert message"
+                className="mt-1"
                 rows={3}
               />
             </div>
-            
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label className="text-sm font-medium">Location</label>
+                <Input
+                  value={newAlert.location}
+                  onChange={(e) => setNewAlert({...newAlert, location: e.target.value})}
+                  placeholder="Alert location"
+                  className="mt-1"
+                />
+              </div>
+              <div>
+                <label className="text-sm font-medium">Affected Areas</label>
+                <Input
+                  value={newAlert.affectedAreas}
+                  onChange={(e) => setNewAlert({...newAlert, affectedAreas: e.target.value})}
+                  placeholder="Comma-separated areas"
+                  className="mt-1"
+                />
+              </div>
+            </div>
             <div className="flex gap-2">
-              <Button onClick={handleCreateAlert} className="text-sm">
-                <Send className="w-4 h-4 mr-2" />
+              <Button onClick={handleCreateAlert}>
+                <Send className="h-4 w-4 mr-2" />
                 Send Alert
               </Button>
-              <Button
-                variant="outline"
-                onClick={() => setIsCreatingAlert(false)}
-                className="text-sm"
-              >
+              <Button variant="outline" onClick={() => setIsCreatingAlert(false)}>
                 Cancel
               </Button>
             </div>
@@ -166,101 +198,67 @@ export function EmergencyAlerts() {
         </Card>
       )}
 
-      {/* Active Alerts */}
-      <div className="space-y-4">
-        <h3 className="text-lg font-semibold">Active Alerts</h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {mockEmergencyAlerts
-            .filter((alert) => alert.status === "active")
-            .map((alert) => (
-              <Card key={alert.id} className="border-l-4 border-l-red-500">
-                <CardHeader className="pb-3">
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1">
-                      <CardTitle className="text-base sm:text-lg">{alert.title}</CardTitle>
-                      <p className="text-sm text-muted-foreground mt-1">{alert.description}</p>
-                    </div>
-                    <Badge
-                      variant="outline"
-                      className={`text-xs ${getSeverityColor(alert.severity)}`}
-                    >
-                      {alert.severity}
-                    </Badge>
-                  </div>
-                </CardHeader>
-                <CardContent className="space-y-3">
-                  <div className="flex items-center gap-4 text-sm">
-                    <div className="flex items-center gap-1">
-                      <MapPin className="w-3 h-3 sm:w-4 sm:h-4 text-muted-foreground" />
-                      <span>{alert.location}</span>
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <Users className="w-3 h-3 sm:w-4 sm:h-4 text-muted-foreground" />
-                      <span>{alert.affectedUsers.toLocaleString()}</span>
-                    </div>
-                  </div>
-                  
-                  <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                    <div className="flex items-center gap-1">
-                      <Clock className="w-3 h-3 sm:w-4 sm:h-4" />
-                      <span>{new Date(alert.createdAt).toLocaleDateString()}</span>
-                    </div>
-                    <span>{alert.responses} responses</span>
-                  </div>
-                  
-                  <div className="flex gap-2">
-                    <Button size="sm" variant="outline" className="text-xs">
-                      View Details
-                    </Button>
-                    <Button size="sm" variant="outline" className="text-xs">
-                      Edit
-                    </Button>
-                    <Button size="sm" variant="outline" className="text-xs">
-                      Resolve
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-        </div>
-      </div>
-
-      {/* Recent Alerts */}
-      <div className="space-y-4">
-        <h3 className="text-lg font-semibold">Recent Alerts</h3>
-        <div className="space-y-3">
-          {mockEmergencyAlerts
-            .filter((alert) => alert.status !== "active")
-            .map((alert) => (
-              <Card key={alert.id}>
-                <CardContent className="p-4">
-                  <div className="flex items-center justify-between">
-                    <div className="flex-1">
-                      <h4 className="font-medium text-sm sm:text-base">{alert.title}</h4>
-                      <p className="text-xs sm:text-sm text-muted-foreground mt-1">
-                        {alert.location} • {alert.affectedUsers.toLocaleString()} users
-                      </p>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Badge
-                        variant="outline"
-                        className={`text-xs ${getSeverityColor(alert.severity)}`}
-                      >
+      {/* Alerts List */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base sm:text-lg">Recent Alerts</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4">
+            {mockEmergencyAlerts.map((alert) => (
+              <div key={alert.id} className="p-4 rounded-lg border">
+                <div className="flex items-start justify-between mb-3">
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2 mb-2">
+                      <h3 className="font-medium">{alert.title}</h3>
+                      <Badge className={getSeverityColor(alert.severity)}>
                         {alert.severity}
                       </Badge>
-                      <Badge
-                        variant="outline"
-                        className={`text-xs ${getStatusColor(alert.status)}`}
-                      >
+                      <Badge className={getStatusColor(alert.status)}>
                         {alert.status}
                       </Badge>
                     </div>
+                    <p className="text-sm text-muted-foreground mb-2">
+                      {alert.message}
+                    </p>
+                    <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                      <div className="flex items-center gap-1">
+                        <MapPin className="h-3 w-3" />
+                        {alert.location}
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <Clock className="h-3 w-3" />
+                        {formatTimestamp(alert.timestamp)}
+                      </div>
+                    </div>
                   </div>
-                </CardContent>
-              </Card>
+                </div>
+                
+                <div className="space-y-2">
+                  <div>
+                    <p className="text-sm font-medium text-muted-foreground">Affected Areas</p>
+                    <div className="flex flex-wrap gap-1 mt-1">
+                      {alert.affectedAreas.map((area, index) => (
+                        <Badge key={index} variant="outline" className="text-xs">
+                          {area}
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-muted-foreground">Recommendations</p>
+                    <ul className="text-sm text-muted-foreground mt-1 space-y-1">
+                      {alert.recommendations.map((rec, index) => (
+                        <li key={index}>• {rec}</li>
+                      ))}
+                    </ul>
+                  </div>
+                </div>
+              </div>
             ))}
-        </div>
-      </div>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   )
 }

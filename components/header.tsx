@@ -26,17 +26,9 @@ export function Header() {
               <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse-subtle"></div>
               <span>Live AI Assistant</span>
             </div>
-            <div className="flex items-center gap-2 text-xs text-muted-foreground">
-              <Shield className="w-3 h-3" />
-              <span>HIPAA Compliant</span>
-            </div>
-            <div className="flex items-center gap-2 text-xs text-muted-foreground">
-              <Zap className="w-3 h-3" />
-              <span>Real-time Data</span>
-            </div>
             <Link href="/admin">
               <Button variant="outline" size="sm" className="btn-professional">
-                Admin
+                Admin Dashboard
               </Button>
             </Link>
           </div>

@@ -5,130 +5,42 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { ScrollArea } from "@/components/ui/scroll-area"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Search, Filter, Download, MessageSquare, Clock, User, AlertTriangle } from "lucide-react"
-
-const mockConversations = [
-  {
-    id: "conv_001",
-    userId: "user_123",
-    userName: "John Doe",
-    language: "English",
-    startTime: "2024-01-15T10:30:00Z",
-    lastMessage: "2024-01-15T10:45:00Z",
-    messageCount: 12,
-    intent: "symptoms_fever",
-    urgencyLevel: "medium",
-    status: "active",
-    preview: "I've been having a high fever for the past 2 days...",
-  },
-  {
-    id: "conv_002",
-    userId: "user_456",
-    userName: "Sarah Wilson",
-    language: "Hindi",
-    startTime: "2024-01-15T09:15:00Z",
-    lastMessage: "2024-01-15T09:30:00Z",
-    messageCount: 8,
-    intent: "medication",
-    urgencyLevel: "low",
-    status: "resolved",
-    preview: "Can you tell me about the side effects of...",
-  },
-  {
-    id: "conv_003",
-    userId: "user_789",
-    userName: "Ahmed Hassan",
-    language: "Arabic",
-    startTime: "2024-01-15T08:45:00Z",
-    lastMessage: "2024-01-15T09:00:00Z",
-    messageCount: 15,
-    intent: "emergency",
-    urgencyLevel: "emergency",
-    status: "active",
-    preview: "I'm experiencing severe chest pain and shortness of breath...",
-  },
-  {
-    id: "conv_004",
-    userId: "user_321",
-    userName: "Maria Garcia",
-    language: "Spanish",
-    startTime: "2024-01-15T07:20:00Z",
-    lastMessage: "2024-01-15T07:35:00Z",
-    messageCount: 6,
-    intent: "vaccination",
-    urgencyLevel: "low",
-    status: "resolved",
-    preview: "When should I get my flu vaccination?",
-  },
-  {
-    id: "conv_005",
-    userId: "user_555",
-    userName: "Robert Smith",
-    language: "English",
-    startTime: "2024-01-15T11:00:00Z",
-    lastMessage: "2024-01-15T11:15:00Z",
-    messageCount: 8,
-    intent: "emergency",
-    urgencyLevel: "emergency",
-    status: "active",
-    preview: "I think I'm having a heart attack, severe chest pain...",
-  },
-  {
-    id: "conv_006",
-    userId: "user_666",
-    userName: "Lisa Johnson",
-    language: "English",
-    startTime: "2024-01-15T09:30:00Z",
-    lastMessage: "2024-01-15T09:45:00Z",
-    messageCount: 10,
-    intent: "emergency",
-    urgencyLevel: "high",
-    status: "active",
-    preview: "My child is unconscious and not breathing properly...",
-  },
-]
+import { ScrollArea } from "@/components/ui/scroll-area"
+import { 
+  MessageSquare, 
+  Search, 
+  Filter, 
+  MoreVertical, 
+  Phone, 
+  Mail, 
+  Clock,
+  CheckCircle,
+  XCircle,
+  AlertCircle,
+  User,
+  Bot,
+  Send,
+  Download,
+  RefreshCw
+} from "lucide-react"
+import { MockDataService } from "@/lib/mock-data-service"
 
 export function ConversationMonitor() {
   const [searchTerm, setSearchTerm] = useState("")
-  const [filterStatus, setFilterStatus] = useState("all")
+  const [statusFilter, setStatusFilter] = useState("all")
+  const [channelFilter, setChannelFilter] = useState("all")
   const [selectedConversation, setSelectedConversation] = useState<string | null>(null)
 
-  const filteredConversations = mockConversations.filter((conv) => {
-    const matchesSearch = conv.userName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         conv.preview.toLowerCase().includes(searchTerm.toLowerCase())
-    
-    let matchesStatus = true
-    if (filterStatus === "all") {
-      matchesStatus = true
-    } else if (filterStatus === "active") {
-      matchesStatus = conv.status === "active"
-    } else if (filterStatus === "resolved") {
-      matchesStatus = conv.status === "resolved"
-    } else if (filterStatus === "emergency") {
-      matchesStatus = conv.urgencyLevel === "emergency" || conv.urgencyLevel === "high"
-    }
-    
-    return matchesSearch && matchesStatus
+  const mockConversations = MockDataService.getConversationData()
+
+  const filteredConversations = mockConversations.filter(conv => {
+    const matchesSearch = conv.userId.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         conv.intent.toLowerCase().includes(searchTerm.toLowerCase())
+    const matchesStatus = statusFilter === "all" || conv.status === statusFilter
+    const matchesChannel = channelFilter === "all" || conv.channel === channelFilter
+    return matchesSearch && matchesStatus && matchesChannel
   })
-
-  const selectedConv = mockConversations.find((conv) => conv.id === selectedConversation)
-
-  const getUrgencyColor = (urgency: string) => {
-    switch (urgency) {
-      case "emergency":
-        return "bg-red-100 text-red-800 border-red-200"
-      case "high":
-        return "bg-orange-100 text-orange-800 border-orange-200"
-      case "medium":
-        return "bg-yellow-100 text-yellow-800 border-yellow-200"
-      case "low":
-        return "bg-green-100 text-green-800 border-green-200"
-      default:
-        return "bg-gray-100 text-gray-800 border-gray-200"
-    }
-  }
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -136,213 +48,205 @@ export function ConversationMonitor() {
         return "bg-blue-100 text-blue-800"
       case "resolved":
         return "bg-green-100 text-green-800"
+      case "pending":
+        return "bg-yellow-100 text-yellow-800"
       case "escalated":
-        return "bg-orange-100 text-orange-800"
+        return "bg-red-100 text-red-800"
       default:
         return "bg-gray-100 text-gray-800"
     }
   }
 
+  const getStatusIcon = (status: string) => {
+    switch (status) {
+      case "active":
+        return <Clock className="h-3 w-3" />
+      case "resolved":
+        return <CheckCircle className="h-3 w-3" />
+      case "pending":
+        return <AlertCircle className="h-3 w-3" />
+      case "escalated":
+        return <XCircle className="h-3 w-3" />
+      default:
+        return <Clock className="h-3 w-3" />
+    }
+  }
+
   return (
-    <div className="space-y-4 sm:space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h2 className="text-xl sm:text-2xl font-bold">Conversation Monitor</h2>
-          <p className="text-sm sm:text-base text-muted-foreground">Monitor and analyze user conversations in real-time</p>
+    <div className="space-y-3 sm:space-y-4 lg:space-y-6">
+      {/* Mobile-optimized filters */}
+      <div className="space-y-3">
+        <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+            <Input
+              placeholder="Search conversations..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="pl-10 text-sm"
+            />
+          </div>
+          <div className="flex gap-2">
+            <Button variant="outline" size="sm" className="flex-1 sm:flex-none">
+              <Filter className="h-4 w-4 mr-1 sm:mr-2" />
+              <span className="hidden sm:inline">Filter</span>
+            </Button>
+            <Button variant="outline" size="sm" className="flex-1 sm:flex-none">
+              <Download className="h-4 w-4 mr-1 sm:mr-2" />
+              <span className="hidden sm:inline">Export</span>
+            </Button>
+          </div>
         </div>
-        <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm" className="text-xs sm:text-sm">
-            <Download className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
-            <span className="hidden sm:inline">Export</span>
+
+        {/* Mobile filter chips */}
+        <div className="flex flex-wrap gap-2">
+          <Button
+            variant={statusFilter === "all" ? "default" : "outline"}
+            size="sm"
+            onClick={() => setStatusFilter("all")}
+            className="text-xs"
+          >
+            All Status
           </Button>
-          <Button variant="outline" size="sm" className="text-xs sm:text-sm">
-            <Filter className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
-            <span className="hidden sm:inline">Filter</span>
+          <Button
+            variant={statusFilter === "active" ? "default" : "outline"}
+            size="sm"
+            onClick={() => setStatusFilter("active")}
+            className="text-xs"
+          >
+            Active
+          </Button>
+          <Button
+            variant={statusFilter === "resolved" ? "default" : "outline"}
+            size="sm"
+            onClick={() => setStatusFilter("resolved")}
+            className="text-xs"
+          >
+            Resolved
+          </Button>
+          <Button
+            variant={channelFilter === "whatsapp" ? "default" : "outline"}
+            size="sm"
+            onClick={() => setChannelFilter("whatsapp")}
+            className="text-xs"
+          >
+            WhatsApp
+          </Button>
+          <Button
+            variant={channelFilter === "sms" ? "default" : "outline"}
+            size="sm"
+            onClick={() => setChannelFilter("sms")}
+            className="text-xs"
+          >
+            SMS
           </Button>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
-        {/* Conversation List */}
-        <div className="lg:col-span-1 space-y-4">
-          <div className="flex items-center gap-2">
-            <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-3 h-3 sm:w-4 sm:h-4" />
-              <Input
-                placeholder="Search conversations..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-8 sm:pl-10 text-sm"
-              />
-            </div>
-          </div>
-
-          <Tabs value={filterStatus} onValueChange={setFilterStatus}>
-            <TabsList className="grid w-full grid-cols-2 sm:grid-cols-4">
-              <TabsTrigger value="all" className="text-xs">All</TabsTrigger>
-              <TabsTrigger value="active" className="text-xs">Active</TabsTrigger>
-              <TabsTrigger value="resolved" className="text-xs">Resolved</TabsTrigger>
-              <TabsTrigger value="emergency" className="text-xs">Emergency</TabsTrigger>
-            </TabsList>
-          </Tabs>
-
-          <ScrollArea className="h-96 sm:h-[600px]">
-            <div className="space-y-2">
-              {filteredConversations.length > 0 ? (
-                filteredConversations.map((conversation) => (
-                  <Card
-                    key={conversation.id}
-                    className={`cursor-pointer transition-colors ${
-                      selectedConversation === conversation.id
-                        ? "ring-2 ring-primary"
-                        : "hover:bg-muted/50"
-                    }`}
-                    onClick={() => setSelectedConversation(conversation.id)}
-                  >
-                    <CardContent className="p-3 sm:p-4">
-                      <div className="space-y-2">
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-2">
-                            <User className="w-3 h-3 sm:w-4 sm:h-4 text-muted-foreground" />
-                            <span className="text-sm font-medium">{conversation.userName}</span>
+      {/* Conversations List - Mobile optimized */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 sm:gap-4 lg:gap-6">
+        {/* Conversations List */}
+        <div className="lg:col-span-1">
+          <Card className="h-96 sm:h-[500px] lg:h-[600px]">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-sm sm:text-base">Conversations</CardTitle>
+            </CardHeader>
+            <CardContent className="p-0">
+              <ScrollArea className="h-80 sm:h-[420px] lg:h-[520px]">
+                <div className="space-y-2 p-3">
+                  {filteredConversations.map((conversation) => (
+                    <div
+                      key={conversation.id}
+                      className={`p-3 rounded-lg border cursor-pointer transition-colors ${
+                        selectedConversation === conversation.id
+                          ? "bg-primary/10 border-primary"
+                          : "bg-card hover:bg-muted/50"
+                      }`}
+                      onClick={() => setSelectedConversation(conversation.id)}
+                    >
+                      <div className="flex items-start justify-between mb-2">
+                        <div className="flex items-center gap-2 min-w-0 flex-1">
+                          <div className="w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center flex-shrink-0">
+                            <User className="w-4 h-4 text-primary" />
                           </div>
-                          <Badge
-                            variant="outline"
-                            className={`text-xs ${getUrgencyColor(conversation.urgencyLevel)}`}
-                          >
-                            {conversation.urgencyLevel}
-                          </Badge>
-                        </div>
-                        
-                        <p className="text-xs sm:text-sm text-muted-foreground line-clamp-2">
-                          {conversation.preview}
-                        </p>
-                        
-                        <div className="flex items-center justify-between text-xs text-muted-foreground">
-                          <div className="flex items-center gap-1">
-                            <Clock className="w-3 h-3" />
-                            <span>{new Date(conversation.lastMessage).toLocaleTimeString()}</span>
-                          </div>
-                          <div className="flex items-center gap-1">
-                            <MessageSquare className="w-3 h-3" />
-                            <span>{conversation.messageCount}</span>
+                          <div className="min-w-0 flex-1">
+                            <p className="text-xs sm:text-sm font-medium text-foreground truncate">
+                              {conversation.userId}
+                            </p>
+                            <p className="text-xs text-muted-foreground truncate">
+                              {conversation.intent}
+                            </p>
                           </div>
                         </div>
-                        
-                        <div className="flex items-center justify-between">
-                          <Badge variant="secondary" className="text-xs">
-                            {conversation.intent}
-                          </Badge>
-                          <Badge
-                            variant="outline"
-                            className={`text-xs ${getStatusColor(conversation.status)}`}
-                          >
-                            {conversation.status}
-                          </Badge>
-                        </div>
+                        <Badge 
+                          className={`text-xs ${getStatusColor(conversation.status)}`}
+                        >
+                          {getStatusIcon(conversation.status)}
+                          <span className="ml-1 hidden sm:inline">{conversation.status}</span>
+                        </Badge>
                       </div>
-                    </CardContent>
-                  </Card>
-                ))
-              ) : (
-                <div className="flex flex-col items-center justify-center h-64 text-center">
-                  <AlertTriangle className="w-12 h-12 text-muted-foreground mb-4" />
-                  <p className="text-sm text-muted-foreground">
-                    {filterStatus === "emergency" 
-                      ? "No emergency conversations found"
-                      : `No ${filterStatus} conversations found`
-                    }
-                  </p>
+                      <div className="flex items-center justify-between text-xs text-muted-foreground">
+                        <span className="flex items-center gap-1">
+                          <MessageSquare className="h-3 w-3" />
+                          {conversation.messageCount} messages
+                        </span>
+                        <span>{conversation.lastActivity}</span>
+                      </div>
+                    </div>
+                  ))}
                 </div>
-              )}
-            </div>
-          </ScrollArea>
+              </ScrollArea>
+            </CardContent>
+          </Card>
         </div>
 
-        {/* Conversation Details */}
+        {/* Conversation Details - Mobile full width on small screens */}
         <div className="lg:col-span-2">
-          {selectedConv ? (
-            <Card>
-              <CardHeader>
+          {selectedConversation ? (
+            <Card className="h-96 sm:h-[500px] lg:h-[600px]">
+              <CardHeader className="pb-3">
                 <div className="flex items-center justify-between">
-                  <div>
-                    <CardTitle className="text-base sm:text-lg">{selectedConv.userName}</CardTitle>
-                    <p className="text-sm text-muted-foreground">
-                      Conversation ID: {selectedConv.id}
-                    </p>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Badge
-                      variant="outline"
-                      className={`text-xs ${getUrgencyColor(selectedConv.urgencyLevel)}`}
-                    >
-                      {selectedConv.urgencyLevel}
-                    </Badge>
-                    <Badge
-                      variant="outline"
-                      className={`text-xs ${getStatusColor(selectedConv.status)}`}
-                    >
-                      {selectedConv.status}
-                    </Badge>
-                  </div>
+                  <CardTitle className="text-sm sm:text-base">Conversation Details</CardTitle>
+                  <Button variant="outline" size="sm" className="text-xs">
+                    <RefreshCw className="h-3 w-3 mr-1" />
+                    Refresh
+                  </Button>
                 </div>
               </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-sm">
-                  <div>
-                    <p className="text-muted-foreground">Language</p>
-                    <p className="font-medium">{selectedConv.language}</p>
+              <CardContent className="p-0">
+                <ScrollArea className="h-80 sm:h-[420px] lg:h-[520px]">
+                  <div className="space-y-3 p-3">
+                    {mockConversations
+                      .find(c => c.id === selectedConversation)
+                      ?.messages.map((message, index) => (
+                        <div
+                          key={index}
+                          className={`flex gap-2 ${
+                            message.sender === "user" ? "justify-end" : "justify-start"
+                          }`}
+                        >
+                          <div
+                            className={`max-w-[80%] p-2 sm:p-3 rounded-lg ${
+                              message.sender === "user"
+                                ? "bg-primary text-primary-foreground"
+                                : "bg-muted"
+                            }`}
+                          >
+                            <p className="text-xs sm:text-sm">{message.content}</p>
+                            <p className="text-xs opacity-70 mt-1">{message.timestamp}</p>
+                          </div>
+                        </div>
+                      ))}
                   </div>
-                  <div>
-                    <p className="text-muted-foreground">Messages</p>
-                    <p className="font-medium">{selectedConv.messageCount}</p>
-                  </div>
-                  <div>
-                    <p className="text-muted-foreground">Started</p>
-                    <p className="font-medium">
-                      {new Date(selectedConv.startTime).toLocaleTimeString()}
-                    </p>
-                  </div>
-                  <div>
-                    <p className="text-muted-foreground">Last Activity</p>
-                    <p className="font-medium">
-                      {new Date(selectedConv.lastMessage).toLocaleTimeString()}
-                    </p>
-                  </div>
-                </div>
-                
-                <div>
-                  <p className="text-sm text-muted-foreground mb-2">Intent Classification</p>
-                  <Badge variant="secondary" className="text-sm">
-                    {selectedConv.intent}
-                  </Badge>
-                </div>
-                
-                <div>
-                  <p className="text-sm text-muted-foreground mb-2">Conversation Preview</p>
-                  <div className="bg-muted p-3 rounded-lg">
-                    <p className="text-sm">{selectedConv.preview}</p>
-                  </div>
-                </div>
-                
-                {selectedConv.urgencyLevel === "emergency" && (
-                  <div className="flex items-center gap-2 p-3 bg-red-50 border border-red-200 rounded-lg">
-                    <AlertTriangle className="w-4 h-4 text-red-600" />
-                    <p className="text-sm text-red-800">
-                      Emergency conversation - consider immediate escalation
-                    </p>
-                  </div>
-                )}
+                </ScrollArea>
               </CardContent>
             </Card>
           ) : (
-            <Card>
-              <CardContent className="flex items-center justify-center h-96">
-                <div className="text-center">
-                  <MessageSquare className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
-                  <p className="text-muted-foreground">Select a conversation to view details</p>
-                </div>
-              </CardContent>
+            <Card className="h-96 sm:h-[500px] lg:h-[600px] flex items-center justify-center">
+              <div className="text-center text-muted-foreground">
+                <MessageSquare className="h-12 w-12 mx-auto mb-3 opacity-50" />
+                <p className="text-sm">Select a conversation to view details</p>
+              </div>
             </Card>
           )}
         </div>

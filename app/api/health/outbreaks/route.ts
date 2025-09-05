@@ -1,18 +1,29 @@
 import { type NextRequest, NextResponse } from "next/server"
-import { HealthAPIService } from "@/lib/health-apis"
+import { MockDataService } from "@/lib/mock-data-service"
 
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url)
-    const location = searchParams.get("location") || undefined
+    const location = searchParams.get("location")
+    const disease = searchParams.get("disease")
 
-    const result = await HealthAPIService.getOutbreakAlerts(location)
+    let outbreaks = MockDataService.getOutbreakData()
 
-    if (!result.success) {
-      return NextResponse.json({ error: result.error }, { status: 400 })
+    if (location) {
+      outbreaks = MockDataService.getOutbreaksByLocation(location)
     }
 
-    return NextResponse.json(result)
+    if (disease) {
+      outbreaks = outbreaks.filter(outbreak => 
+        outbreak.disease.toLowerCase().includes(disease.toLowerCase())
+      )
+    }
+
+    return NextResponse.json({
+      success: true,
+      data: outbreaks,
+      source: "Mock Outbreak Data"
+    })
   } catch (error) {
     return NextResponse.json({ error: "Internal server error" }, { status: 500 })
   }

@@ -64,6 +64,13 @@ export interface OutbreakAlert {
   lastUpdated: string
 }
 
+import { mockDrugs, mockDrugRecalls, mockDrugInteractions } from './mock-data/drug-data';
+import { mockSymptoms, mockSymptomAssessments } from './mock-data/symptom-data';
+import { mockVaccinations } from './mock-data/vaccination-data';
+import { mockProviders } from './mock-data/provider-data';
+import { mockOutbreaks } from './mock-data/outbreak-data';
+import { mockEmergencyAlerts } from './mock-data/emergency-alerts-data';
+
 export class HealthAPIService {
   private static readonly BASE_URLS = {
     // Government health APIs (India)
@@ -99,36 +106,28 @@ export class HealthAPIService {
   }
 
   // Vaccination Information
-  static async getVaccinationInfo(vaccine: string, ageGroup?: string): Promise<HealthAPIResponse<VaccinationInfo[]>> {
+  static async getVaccinationInfo(vaccineName: string, ageGroup?: string): Promise<HealthAPIResponse<VaccinationInfo[]>> {
     try {
-      // Mock implementation - replace with actual API calls
-      const mockVaccinations: VaccinationInfo[] = [
-        {
-          vaccine: "COVID-19",
-          ageGroup: "18+",
-          schedule: ["First dose", "Second dose after 28 days", "Booster after 6 months"],
-          description: "mRNA vaccine for COVID-19 prevention",
-          sideEffects: ["Pain at injection site", "Fatigue", "Headache", "Muscle pain"],
-          contraindications: ["Severe allergic reaction to previous dose", "Active COVID-19 infection"],
-        },
-        {
-          vaccine: "Hepatitis B",
-          ageGroup: "All ages",
-          schedule: ["Birth", "1-2 months", "6-18 months"],
-          description: "Vaccine to prevent Hepatitis B infection",
-          sideEffects: ["Soreness at injection site", "Low-grade fever"],
-          contraindications: ["Severe illness", "Allergy to vaccine components"],
-        },
-      ]
+      const filteredVaccinations = mockVaccinations.filter(
+        (v) =>
+          v.name.toLowerCase().includes(vaccineName.toLowerCase()) &&
+          (!ageGroup || v.ageGroups.some((ag) => ag.toLowerCase().includes(ageGroup.toLowerCase())))
+      );
 
-      const filtered = vaccine
-        ? mockVaccinations.filter((v) => v.vaccine.toLowerCase().includes(vaccine.toLowerCase()))
-        : mockVaccinations
-
-      return {
-        success: true,
-        data: filtered,
-        source: "CoWIN API / WHO Guidelines",
+      if (filteredVaccinations.length > 0) {
+        // The interface `VaccinationInfo` in `lib/health-apis.ts` is slightly different from `mockVaccinations`
+        // I'll map the mock data to fit the `HealthAPIService`'s `VaccinationInfo` interface.
+        const formattedVaccinations = filteredVaccinations.map(v => ({
+          vaccine: v.name,
+          ageGroup: v.ageGroups.join(', '), // Combine age groups into a single string
+          schedule: v.schedule.split('. '), // Split schedule into an array of strings
+          description: v.description,
+          sideEffects: v.sideEffects,
+          contraindications: v.contraindications,
+        }));
+        return { success: true, data: formattedVaccinations, source: "Mock Vaccination Data" };
+      } else {
+        return { success: false, error: "Vaccination information not found in mock data." };
       }
     } catch (error) {
       return {
@@ -144,7 +143,13 @@ export class HealthAPIService {
       // In development mode or if external APIs are not available, use mock data directly
       if (this.isDevelopmentMode() || !(await this.isExternalAPIAvailable())) {
         console.log(`Using mock data for ${drugName} (development mode or no external API access)`)
-        return this.getMockDrugInfo(drugName)
+        // Use imported mockDrugs directly
+        const drug = mockDrugs.find(d => d.name.toLowerCase() === drugName.toLowerCase() || d.genericName.toLowerCase() === drugName.toLowerCase());
+        if (drug) {
+          return { success: true, data: drug, source: "Mock Drug Data" };
+        } else {
+          return { success: false, error: "Drug information not found in mock data." };
+        }
       }
 
       // Try OpenFDA API only if we have external connectivity
@@ -155,10 +160,22 @@ export class HealthAPIService {
 
       // Fallback to mock data if OpenFDA fails
       console.log(`OpenFDA API failed, using fallback data for: ${drugName}`)
-      return this.getMockDrugInfo(drugName)
+      // Use imported mockDrugs directly as fallback
+      const drug = mockDrugs.find(d => d.name.toLowerCase() === drugName.toLowerCase() || d.genericName.toLowerCase() === drugName.toLowerCase());
+      if (drug) {
+        return { success: true, data: drug, source: "Mock Drug Data Fallback" };
+      } else {
+        return { success: false, error: "Drug information not found in mock data." };
+      }
     } catch (error) {
       console.error("Drug info error:", error)
-      return this.getMockDrugInfo(drugName)
+      // Use imported mockDrugs directly as error fallback
+      const drug = mockDrugs.find(d => d.name.toLowerCase() === drugName.toLowerCase() || d.genericName.toLowerCase() === drugName.toLowerCase());
+      if (drug) {
+        return { success: true, data: drug, source: "Mock Drug Data Error Fallback" };
+      } else {
+        return { success: false, error: "Drug information not found in mock data." };
+      }
     }
   }
 
@@ -166,7 +183,7 @@ export class HealthAPIService {
   private static async fetchFromOpenFDA(drugName: string): Promise<HealthAPIResponse<DrugInfo>> {
     try {
       // Search for drug in OpenFDA database using brand name first
-      const searchUrl = `${this.BASE_URLS.openfda}/drug/label.json?search=openfda.brand_name:"${drugName}"&limit=1`
+      const searchUrl = `${this.BASE_URLS.openfda}/drug/label.json?search=openfda.brand_name:\"${drugName}\"&limit=1`
       
       const response = await fetch(searchUrl, {
         method: 'GET',
@@ -185,7 +202,7 @@ export class HealthAPIService {
       
       if (!data.results || data.results.length === 0) {
         // Try searching by generic name if brand name not found
-        const genericSearchUrl = `${this.BASE_URLS.openfda}/drug/label.json?search=openfda.generic_name:"${drugName}"&limit=1`
+        const genericSearchUrl = `${this.BASE_URLS.openfda}/drug/label.json?search=openfda.generic_name:\"${drugName}\"&limit=1`
         
         const genericResponse = await fetch(genericSearchUrl, {
           method: 'GET',
@@ -218,96 +235,6 @@ export class HealthAPIService {
         success: false,
         error: `OpenFDA API failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
       }
-    }
-  }
-
-  // Enhanced mock drug data
-  private static getMockDrugInfo(drugName: string): HealthAPIResponse<DrugInfo> {
-    const mockDrugs: Record<string, DrugInfo> = {
-      aspirin: {
-        name: "Aspirin",
-        genericName: "Acetylsalicylic Acid",
-        description: "Nonsteroidal anti-inflammatory drug (NSAID) used to reduce pain, fever, and inflammation. Also used for cardiovascular protection.",
-        dosage: "325-650mg every 4 hours, max 4000mg/day. For cardiovascular protection: 75-100mg daily",
-        sideEffects: ["Stomach upset", "Nausea", "Heartburn", "Drowsiness", "Ringing in ears", "Easy bruising"],
-        interactions: ["Warfarin", "Alcohol", "Ibuprofen", "Blood thinners", "ACE inhibitors", "Diuretics"],
-        warnings: ["Do not use in children with viral infections", "May increase bleeding risk", "Avoid if allergic to NSAIDs", "Take with food to reduce stomach upset"],
-        manufacturer: "Various manufacturers",
-        activeIngredients: ["Acetylsalicylic Acid"],
-        pregnancyCategory: "D",
-        fdaApprovalDate: "1899-12-30",
-        ndcNumber: "Various",
-      },
-      ibuprofen: {
-        name: "Ibuprofen",
-        genericName: "Ibuprofen",
-        description: "Nonsteroidal anti-inflammatory drug (NSAID) used to treat pain, fever, and inflammation. Available over-the-counter and by prescription.",
-        dosage: "200-400mg every 4-6 hours, max 1200mg/day. Take with food or milk",
-        sideEffects: ["Stomach upset", "Dizziness", "Headache", "Nausea", "Constipation", "Diarrhea"],
-        interactions: ["Aspirin", "Blood thinners", "ACE inhibitors", "Diuretics", "Lithium", "Methotrexate"],
-        warnings: ["Take with food", "Avoid if allergic to NSAIDs", "May increase bleeding risk", "May cause kidney problems"],
-        manufacturer: "Various manufacturers",
-        activeIngredients: ["Ibuprofen"],
-        pregnancyCategory: "B",
-        fdaApprovalDate: "1974-01-01",
-        ndcNumber: "Various",
-      },
-      paracetamol: {
-        name: "Paracetamol",
-        genericName: "Acetaminophen",
-        description: "Pain reliever and fever reducer. Safe for most people when used as directed. Does not reduce inflammation.",
-        dosage: "500-1000mg every 4-6 hours, max 4000mg/day. Do not exceed recommended dose",
-        sideEffects: ["Nausea", "Stomach pain", "Loss of appetite", "Dark urine", "Yellowing of skin/eyes"],
-        interactions: ["Warfarin", "Alcohol", "Phenytoin", "Isoniazid", "Rifampin"],
-        warnings: ["Do not exceed recommended dose", "Avoid alcohol", "Consult doctor if pregnant", "May cause liver damage in overdose"],
-        manufacturer: "Various manufacturers",
-        activeIngredients: ["Acetaminophen"],
-        pregnancyCategory: "B",
-        fdaApprovalDate: "1951-01-01",
-        ndcNumber: "Various",
-      },
-      tylenol: {
-        name: "Tylenol",
-        genericName: "Acetaminophen",
-        description: "Brand name for acetaminophen. Pain reliever and fever reducer. Safe for most people when used as directed.",
-        dosage: "500-1000mg every 4-6 hours, max 4000mg/day. Do not exceed recommended dose",
-        sideEffects: ["Nausea", "Stomach pain", "Loss of appetite", "Dark urine", "Yellowing of skin/eyes"],
-        interactions: ["Warfarin", "Alcohol", "Phenytoin", "Isoniazid", "Rifampin"],
-        warnings: ["Do not exceed recommended dose", "Avoid alcohol", "Consult doctor if pregnant", "May cause liver damage in overdose"],
-        manufacturer: "Johnson & Johnson",
-        activeIngredients: ["Acetaminophen"],
-        pregnancyCategory: "B",
-        fdaApprovalDate: "1955-01-01",
-        ndcNumber: "Various",
-      },
-      advil: {
-        name: "Advil",
-        genericName: "Ibuprofen",
-        description: "Brand name for ibuprofen. Nonsteroidal anti-inflammatory drug (NSAID) used to treat pain, fever, and inflammation.",
-        dosage: "200-400mg every 4-6 hours, max 1200mg/day. Take with food or milk",
-        sideEffects: ["Stomach upset", "Dizziness", "Headache", "Nausea", "Constipation", "Diarrhea"],
-        interactions: ["Aspirin", "Blood thinners", "ACE inhibitors", "Diuretics", "Lithium", "Methotrexate"],
-        warnings: ["Take with food", "Avoid if allergic to NSAIDs", "May increase bleeding risk", "May cause kidney problems"],
-        manufacturer: "Pfizer",
-        activeIngredients: ["Ibuprofen"],
-        pregnancyCategory: "B",
-        fdaApprovalDate: "1984-01-01",
-        ndcNumber: "Various",
-      },
-    }
-
-    const drug = mockDrugs[drugName.toLowerCase()]
-    if (!drug) {
-      return {
-        success: false,
-        error: "Drug information not found",
-      }
-    }
-
-    return {
-      success: true,
-      data: drug,
-      source: "Comprehensive Drug Database",
     }
   }
 
@@ -352,7 +279,13 @@ export class HealthAPIService {
       // In development mode or if external APIs are not available, use mock data directly
       if (this.isDevelopmentMode() || !(await this.isExternalAPIAvailable())) {
         console.log(`Using mock data for recalls (development mode or no external API access)`)
-        return this.getMockDrugRecalls(drugName)
+        // Use imported mockDrugRecalls directly
+        if (drugName) {
+          const filteredRecalls = mockDrugRecalls.filter(recall => recall.drugName.toLowerCase().includes(drugName.toLowerCase()));
+          return { success: true, data: filteredRecalls, source: "Mock Drug Recalls Data" };
+        } else {
+          return { success: true, data: mockDrugRecalls, source: "Mock Drug Recalls Data" };
+        }
       }
 
       // Try OpenFDA API only if we have external connectivity
@@ -363,10 +296,22 @@ export class HealthAPIService {
 
       // Fallback to mock data
       console.log(`OpenFDA API failed, using fallback data for recalls`)
-      return this.getMockDrugRecalls(drugName)
+      // Use imported mockDrugRecalls directly as fallback
+      if (drugName) {
+        const filteredRecalls = mockDrugRecalls.filter(recall => recall.drugName.toLowerCase().includes(drugName.toLowerCase()));
+        return { success: true, data: filteredRecalls, source: "Mock Drug Recalls Data Fallback" };
+      } else {
+        return { success: true, data: mockDrugRecalls, source: "Mock Drug Recalls Data Fallback" };
+      }
     } catch (error) {
       console.error("Drug recalls error:", error)
-      return this.getMockDrugRecalls(drugName)
+      // Use imported mockDrugRecalls directly as error fallback
+      if (drugName) {
+        const filteredRecalls = mockDrugRecalls.filter(recall => recall.drugName.toLowerCase().includes(drugName.toLowerCase()));
+        return { success: true, data: filteredRecalls, source: "Mock Drug Recalls Data Error Fallback" };
+      } else {
+        return { success: true, data: mockDrugRecalls, source: "Mock Drug Recalls Data Error Fallback" };
+      }
     }
   }
 
@@ -376,7 +321,7 @@ export class HealthAPIService {
       let searchUrl = `${this.BASE_URLS.openfda}/drug/event.json?limit=10`
       
       if (drugName) {
-        searchUrl += `&search=patient.drug.medicinalproduct:"${drugName}"`
+        searchUrl += `&search=patient.drug.medicinalproduct:\"${drugName}\"`
       }
 
       const response = await fetch(searchUrl, {
@@ -407,64 +352,19 @@ export class HealthAPIService {
     }
   }
 
-  // Enhanced mock drug recalls data
-  private static getMockDrugRecalls(drugName?: string): HealthAPIResponse<any[]> {
-    const mockRecalls = [
-      {
-        report_date: "2024-01-15",
-        event_type: "Adverse Event",
-        patient: {
-          age: 45,
-          sex: 1
-        },
-        reaction: ["Nausea", "Headache", "Dizziness"],
-        drug: [{
-          medicinalproduct: [drugName || "Unknown Drug"],
-          drugdosagetext: ["500mg daily"]
-        }]
-      },
-      {
-        report_date: "2024-01-10",
-        event_type: "Serious Adverse Event",
-        patient: {
-          age: 67,
-          sex: 2
-        },
-        reaction: ["Allergic Reaction", "Rash", "Swelling"],
-        drug: [{
-          medicinalproduct: [drugName || "Unknown Drug"],
-          drugdosagetext: ["200mg twice daily"]
-        }]
-      },
-      {
-        report_date: "2024-01-05",
-        event_type: "Drug Interaction",
-        patient: {
-          age: 52,
-          sex: 1
-        },
-        reaction: ["Increased bleeding", "Bruising"],
-        drug: [{
-          medicinalproduct: [drugName || "Unknown Drug"],
-          drugdosagetext: ["100mg daily"]
-        }]
-      }
-    ]
-
-    return {
-      success: true,
-      data: mockRecalls,
-      source: "Comprehensive Safety Database",
-    }
-  }
-
   // Get drug interactions with smart fallback
   static async getDrugInteractions(drugName: string): Promise<HealthAPIResponse<any[]>> {
     try {
       // In development mode or if external APIs are not available, use mock data directly
       if (this.isDevelopmentMode() || !(await this.isExternalAPIAvailable())) {
         console.log(`Using mock data for interactions (development mode or no external API access)`)
-        return this.getMockDrugInteractions(drugName)
+        // Use imported mockDrugInteractions directly
+        const interactions = mockDrugInteractions.filter(i => i.drug1.toLowerCase() === drugName.toLowerCase() || i.drug2.toLowerCase() === drugName.toLowerCase());
+        if (interactions.length > 0) {
+          return { success: true, data: interactions, source: "Mock Drug Interactions Data" };
+        } else {
+          return { success: false, error: "Drug interactions not found in mock data." };
+        }
       }
 
       // Try OpenFDA API only if we have external connectivity
@@ -475,17 +375,29 @@ export class HealthAPIService {
 
       // Fallback to mock data
       console.log(`OpenFDA API failed, using fallback data for interactions`)
-      return this.getMockDrugInteractions(drugName)
+      // Use imported mockDrugInteractions directly as fallback
+      const interactions = mockDrugInteractions.filter(i => i.drug1.toLowerCase() === drugName.toLowerCase() || i.drug2.toLowerCase() === drugName.toLowerCase());
+      if (interactions.length > 0) {
+        return { success: true, data: interactions, source: "Mock Drug Interactions Data Fallback" };
+      } else {
+        return { success: false, error: "Drug interactions not found in mock data." };
+      }
     } catch (error) {
       console.error("Drug interactions error:", error)
-      return this.getMockDrugInteractions(drugName)
+      // Use imported mockDrugInteractions directly as error fallback
+      const interactions = mockDrugInteractions.filter(i => i.drug1.toLowerCase() === drugName.toLowerCase() || i.drug2.toLowerCase() === drugName.toLowerCase());
+      if (interactions.length > 0) {
+        return { success: true, data: interactions, source: "Mock Drug Interactions Data Error Fallback" };
+      } else {
+        return { success: false, error: "Drug interactions not found in mock data." };
+      }
     }
   }
 
   // Fetch drug interactions from OpenFDA (only called when external connectivity is available)
   private static async fetchDrugInteractionsFromOpenFDA(drugName: string): Promise<HealthAPIResponse<any[]>> {
     try {
-      const searchUrl = `${this.BASE_URLS.openfda}/drug/label.json?search=openfda.brand_name:"${drugName}"&limit=1`
+      const searchUrl = `${this.BASE_URLS.openfda}/drug/label.json?search=openfda.brand_name:\"${drugName}\"&limit=1`
       
       const response = await fetch(searchUrl, {
         method: 'GET',
@@ -528,112 +440,17 @@ export class HealthAPIService {
     }
   }
 
-  // Enhanced mock drug interactions data
-  private static getMockDrugInteractions(drugName: string): HealthAPIResponse<any[]> {
-    const mockInteractions: Record<string, string[]> = {
-      aspirin: [
-        "Warfarin - May increase bleeding risk significantly",
-        "Alcohol - May increase stomach bleeding and liver damage",
-        "Ibuprofen - May reduce aspirin's heart benefits",
-        "Blood thinners - May increase bleeding risk",
-        "ACE inhibitors - May reduce blood pressure control",
-        "Diuretics - May reduce effectiveness of both drugs"
-      ],
-      ibuprofen: [
-        "Aspirin - May reduce heart benefits of aspirin",
-        "Blood thinners - May increase bleeding risk",
-        "ACE inhibitors - May reduce blood pressure control",
-        "Diuretics - May reduce effectiveness of both drugs",
-        "Lithium - May increase lithium levels in blood",
-        "Methotrexate - May increase methotrexate toxicity"
-      ],
-      paracetamol: [
-        "Warfarin - May increase bleeding risk with high doses",
-        "Alcohol - May cause severe liver damage",
-        "Phenytoin - May increase liver toxicity",
-        "Isoniazid - May increase liver damage risk",
-        "Rifampin - May increase liver toxicity"
-      ],
-      tylenol: [
-        "Warfarin - May increase bleeding risk with high doses",
-        "Alcohol - May cause severe liver damage",
-        "Phenytoin - May increase liver toxicity",
-        "Isoniazid - May increase liver damage risk",
-        "Rifampin - May increase liver toxicity"
-      ],
-      advil: [
-        "Aspirin - May reduce heart benefits of aspirin",
-        "Blood thinners - May increase bleeding risk",
-        "ACE inhibitors - May reduce blood pressure control",
-        "Diuretics - May reduce effectiveness of both drugs",
-        "Lithium - May increase lithium levels in blood",
-        "Methotrexate - May increase methotrexate toxicity"
-      ]
-    }
-
-    const interactions = mockInteractions[drugName.toLowerCase()] || [
-      "No known significant interactions",
-      "Always consult your healthcare provider about drug combinations",
-      "Inform your doctor about all medications you're taking"
-    ]
-
-    return {
-      success: true,
-      data: [{
-        drug: drugName,
-        interactions: interactions,
-        lastUpdated: new Date().toISOString(),
-      }],
-      source: "Comprehensive Drug Interactions Database",
-    }
-  }
-
   // Symptom Assessment
   static async assessSymptoms(symptoms: string[]): Promise<HealthAPIResponse<SymptomAssessment>> {
     try {
-      // Mock implementation - replace with medical AI API
-      const assessment: SymptomAssessment = {
-        symptoms,
-        possibleConditions: [
-          {
-            condition: "Common Cold",
-            probability: 0.7,
-            urgency: "low",
-            description: "Viral upper respiratory infection",
-          },
-          {
-            condition: "Influenza",
-            probability: 0.3,
-            urgency: "medium",
-            description: "Viral infection affecting respiratory system",
-          },
-        ],
-        recommendations: [
-          "Get plenty of rest",
-          "Stay hydrated with fluids",
-          "Use over-the-counter pain relievers if needed",
-          "Monitor symptoms for worsening",
-        ],
-        whenToSeekCare: "Seek medical care if symptoms worsen, fever exceeds 103°F, or difficulty breathing occurs",
-      }
+      const filteredSymptoms = mockSymptoms.filter(s => symptoms.some(sym => sym.toLowerCase().includes(s.name.toLowerCase())));
+      const filteredAssessments = mockSymptomAssessments.filter(a => a.symptoms.some(sym => sym.toLowerCase().includes(symptoms[0].toLowerCase())));
 
-      // Adjust based on symptoms
-      if (symptoms.some((s) => s.toLowerCase().includes("chest pain"))) {
-        assessment.possibleConditions = [
-          {
-            condition: "Cardiac Event",
-            probability: 0.8,
-            urgency: "emergency",
-            description: "Potential heart-related emergency",
-          },
-        ]
-        assessment.whenToSeekCare = "SEEK IMMEDIATE EMERGENCY CARE - Call 911/108"
-      }
-
-      return {
-        success: true,
-        data: assessment,
-        source: "Medical AI Assessment",
+      if (filteredSymptoms.length > 0 && filteredAssessments.length > 0) {
+        const assessment = filteredAssessments[0];
+        return { success: true, data: assessment, source: "Mock Symptom Assessment Data" };
+      } else {
+        return { success: false, error: "Symptom assessment not found in mock data." };
       }
     } catch (error) {
       return {
@@ -649,46 +466,15 @@ export class HealthAPIService {
     type?: string,
   ): Promise<HealthAPIResponse<HealthcareProvider[]>> {
     try {
-      // Mock implementation - replace with Google Places/Healthcare.gov API
-      const mockProviders: HealthcareProvider[] = [
-        {
-          name: "City General Hospital",
-          type: "hospital",
-          address: "123 Main St, " + location,
-          phone: "+1-555-0123",
-          distance: 2.5,
-          rating: 4.2,
-          specialties: ["Emergency Medicine", "Internal Medicine", "Surgery"],
-          emergencyServices: true,
-        },
-        {
-          name: "Family Health Clinic",
-          type: "clinic",
-          address: "456 Oak Ave, " + location,
-          phone: "+1-555-0456",
-          distance: 1.8,
-          rating: 4.5,
-          specialties: ["Family Medicine", "Pediatrics"],
-          emergencyServices: false,
-        },
-        {
-          name: "24/7 Pharmacy",
-          type: "pharmacy",
-          address: "789 Pine St, " + location,
-          phone: "+1-555-0789",
-          distance: 0.5,
-          rating: 4.0,
-          specialties: ["Prescription Filling", "Vaccinations"],
-          emergencyServices: false,
-        },
-      ]
+      const filteredProviders = mockProviders.filter(p => p.address.toLowerCase().includes(location.toLowerCase()));
+      if (type) {
+        filteredProviders = filteredProviders.filter(p => p.type.toLowerCase().includes(type.toLowerCase()));
+      }
 
-      const filtered = type ? mockProviders.filter((p) => p.type === type) : mockProviders
-
-      return {
-        success: true,
-        data: filtered.sort((a, b) => a.distance - b.distance),
-        source: "Healthcare Provider Directory",
+      if (filteredProviders.length > 0) {
+        return { success: true, data: filteredProviders, source: "Mock Healthcare Providers Data" };
+      } else {
+        return { success: false, error: "Healthcare providers not found in mock data." };
       }
     } catch (error) {
       return {
@@ -701,34 +487,11 @@ export class HealthAPIService {
   // Outbreak Alerts
   static async getOutbreakAlerts(location?: string): Promise<HealthAPIResponse<OutbreakAlert[]>> {
     try {
-      // Mock implementation - replace with WHO/CDC API
-      const mockAlerts: OutbreakAlert[] = [
-        {
-          disease: "Seasonal Influenza",
-          location: "Global",
-          severity: "medium",
-          description: "Increased flu activity reported in multiple regions",
-          preventionMeasures: ["Get flu vaccination", "Wash hands frequently", "Avoid close contact with sick people"],
-          lastUpdated: new Date().toISOString(),
-        },
-        {
-          disease: "Dengue Fever",
-          location: "Southeast Asia",
-          severity: "high",
-          description: "Dengue outbreak reported in urban areas",
-          preventionMeasures: ["Eliminate standing water", "Use mosquito repellent", "Wear long sleeves"],
-          lastUpdated: new Date().toISOString(),
-        },
-      ]
-
-      const filtered = location
-        ? mockAlerts.filter((alert) => alert.location.toLowerCase().includes(location.toLowerCase()))
-        : mockAlerts
-
-      return {
-        success: true,
-        data: filtered,
-        source: "WHO / CDC Outbreak Surveillance",
+      const filteredOutbreaks = mockOutbreaks.filter(o => !location || o.location.toLowerCase().includes(location.toLowerCase()));
+      if (filteredOutbreaks.length > 0) {
+        return { success: true, data: filteredOutbreaks, source: "Mock Outbreak Alerts Data" };
+      } else {
+        return { success: false, error: "Outbreak alerts not found in mock data." };
       }
     } catch (error) {
       return {
@@ -741,21 +504,11 @@ export class HealthAPIService {
   // Emergency Services
   static async getEmergencyContacts(location: string): Promise<HealthAPIResponse<any>> {
     try {
-      const emergencyServices = {
-        location,
-        contacts: [
-          { service: "Emergency Medical", number: "108", description: "Medical emergencies" },
-          { service: "Fire Department", number: "101", description: "Fire and rescue" },
-          { service: "Police", number: "100", description: "Police emergencies" },
-          { service: "Disaster Management", number: "108", description: "Natural disasters" },
-        ],
-        nearestHospitals: await this.findHealthcareProviders(location, "hospital"),
-      }
-
-      return {
-        success: true,
-        data: emergencyServices,
-        source: "Emergency Services Directory",
+      const filteredAlerts = mockEmergencyAlerts.filter(a => a.location.toLowerCase().includes(location.toLowerCase()));
+      if (filteredAlerts.length > 0) {
+        return { success: true, data: filteredAlerts, source: "Mock Emergency Alerts Data" };
+      } else {
+        return { success: false, error: "Emergency contacts not found in mock data." };
       }
     } catch (error) {
       return {

@@ -9,9 +9,12 @@ import {
   Calendar,
   AlertTriangle,
   Search,
-  ArrowRight
+  ArrowRight,
+  Phone,
+  Heart,
+  Shield
 } from "lucide-react"
-import { getTranslation } from "@/lib/translations"
+import { quickActionsData, popularSearches, emergencyContacts, healthTips } from "@/lib/mock-data/quick-actions-data"
 
 interface QuickActionsProps {
   onActionSelect: (action: string) => void
@@ -19,94 +22,64 @@ interface QuickActionsProps {
 }
 
 export function QuickActions({ onActionSelect, language }: QuickActionsProps) {
-  const quickActions = [
-    {
-      category: "Drug Information",
-      icon: <Pill className="h-4 w-4" />,
-      color: "text-blue-600",
-      bgColor: "bg-blue-50",
-      actions: [
-        "Tell me about aspirin",
-        "What is ibuprofen?",
-        "Drug information for paracetamol",
-        "Check drug interactions for aspirin",
-        "Drug safety alerts",
-        "Side effects of ibuprofen"
-      ]
-    },
-    {
-      category: "Symptoms",
-      icon: <Stethoscope className="h-4 w-4" />,
-      color: "text-green-600",
-      bgColor: "bg-green-50",
-      actions: [
-        "I have a fever",
-        "Chest pain symptoms",
-        "Headache and nausea",
-        "Shortness of breath",
-        "Stomach pain",
-        "Feeling dizzy"
-      ]
-    },
-    {
-      category: "Emergency",
-      icon: <AlertTriangle className="h-4 w-4" />,
-      color: "text-red-600",
-      bgColor: "bg-red-50",
-      actions: [
-        "Emergency help",
-        "Chest pain emergency",
-        "Difficulty breathing",
-        "Severe bleeding",
-        "Unconscious person"
-      ]
-    },
-    {
-      category: "Health Services",
-      icon: <Calendar className="h-4 w-4" />,
-      color: "text-purple-600",
-      bgColor: "bg-purple-50",
-      actions: [
-        "Find doctors near me",
-        "Book appointment",
-        "Vaccination schedule",
-        "Health checkup",
-        "Mental health support"
-      ]
+  const getIcon = (iconName: string) => {
+    switch (iconName) {
+      case "Pill": return <Pill className="h-3 w-3" />
+      case "Stethoscope": return <Stethoscope className="h-3 w-3" />
+      case "AlertTriangle": return <AlertTriangle className="h-3 w-3" />
+      case "Calendar": return <Calendar className="h-3 w-3" />
+      default: return <Search className="h-3 w-3" />
     }
-  ]
+  }
+
+  const getQuestions = (questions: any) => {
+    return questions[language] || questions.en
+  }
+
+  const getPopularSearches = () => {
+    return popularSearches[language as keyof typeof popularSearches] || popularSearches.en
+  }
+
+  const getEmergencyContacts = () => {
+    return emergencyContacts[language as keyof typeof emergencyContacts] || emergencyContacts.en
+  }
+
+  const getHealthTips = () => {
+    return healthTips[language as keyof typeof healthTips] || healthTips.en
+  }
 
   return (
-    <div className="space-y-6 h-full">
+    <div className="space-y-3 h-full max-h-[500px] overflow-hidden">
+      {/* Quick Actions */}
       <Card className="card-hover h-fit">
-        <CardHeader className="pb-4">
-          <CardTitle className="text-lg flex items-center gap-2 text-foreground">
-            <Search className="h-5 w-5 text-muted-foreground" />
-            Quick Actions
+        <CardHeader className="pb-2 px-4 pt-4">
+          <CardTitle className="text-sm flex items-center gap-2 text-foreground">
+            <Search className="h-3 w-3 text-muted-foreground" />
+            {language === 'hi' ? 'त्वरित कार्य' : 'Quick Actions'}
           </CardTitle>
         </CardHeader>
-        <CardContent className="space-y-6">
-          {quickActions.map((category, categoryIndex) => (
-            <div key={categoryIndex} className="space-y-3">
-              <div className="flex items-center gap-3">
-                <div className={`p-2 rounded-lg ${category.bgColor} ${category.color}`}>
-                  {category.icon}
+        <CardContent className="space-y-3 px-4 pb-4 max-h-[200px] overflow-y-auto">
+          {quickActionsData.map((category, categoryIndex) => (
+            <div key={categoryIndex} className="space-y-2">
+              <div className="flex items-center gap-2">
+                <div className={`p-1.5 rounded ${category.bgColor} ${category.color}`}>
+                  {getIcon(category.icon)}
                 </div>
-                <h3 className="font-medium text-sm text-foreground">
+                <h3 className="font-medium text-xs text-foreground">
                   {category.category}
                 </h3>
               </div>
               <div className="grid gap-1">
-                {category.actions.map((action, actionIndex) => (
+                {getQuestions(category.questions).slice(0, 2).map((question: string, questionIndex: number) => (
                   <Button
-                    key={actionIndex}
+                    key={questionIndex}
                     variant="ghost"
                     size="sm"
-                    className="w-full justify-start text-xs h-auto py-2 px-3 text-left hover-subtle group text-left"
-                    onClick={() => onActionSelect(action)}
+                    className="w-full justify-start text-xs h-auto py-1.5 px-2 text-left hover-subtle group text-left"
+                    onClick={() => onActionSelect(question)}
                   >
-                    <span className="truncate flex-1 text-left">{action}</span>
-                    <ArrowRight className="h-3 w-3 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex-shrink-0" />
+                    <span className="truncate flex-1 text-left">{question}</span>
+                    <ArrowRight className="h-2 w-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex-shrink-0" />
                   </Button>
                 ))}
               </div>
@@ -115,33 +88,26 @@ export function QuickActions({ onActionSelect, language }: QuickActionsProps) {
         </CardContent>
       </Card>
 
-      {/* Drug Search Examples */}
+      {/* Popular Searches */}
       <Card className="card-hover h-fit">
-        <CardHeader className="pb-4">
-          <CardTitle className="text-lg flex items-center gap-2 text-foreground">
-            <Pill className="h-5 w-5 text-muted-foreground" />
-            Popular Searches
+        <CardHeader className="pb-2 px-4 pt-4">
+          <CardTitle className="text-sm flex items-center gap-2 text-foreground">
+            <Pill className="h-3 w-3 text-muted-foreground" />
+            {language === 'hi' ? 'लोकप्रिय खोजें' : 'Popular Searches'}
           </CardTitle>
         </CardHeader>
-        <CardContent>
+        <CardContent className="px-4 pb-4 max-h-[190px] overflow-y-auto">
           <div className="grid gap-1">
-            {[
-              "Aspirin information",
-              "Ibuprofen side effects", 
-              "Paracetamol dosage",
-              "Drug interactions check",
-              "Medicine safety alerts",
-              "Prescription drug info"
-            ].map((search, index) => (
+            {getPopularSearches().slice(0, 6).map((search: string, index: number) => (
               <Button
                 key={index}
                 variant="ghost"
                 size="sm"
-                className="w-full justify-start text-xs h-auto py-2 px-3 text-left hover-subtle group text-left"
+                className="w-full justify-start text-xs h-auto py-1.5 px-2 text-left hover-subtle group text-left"
                 onClick={() => onActionSelect(search)}
               >
                 <span className="truncate flex-1 text-left">{search}</span>
-                <ArrowRight className="h-3 w-3 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex-shrink-0" />
+                <ArrowRight className="h-2 w-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex-shrink-0" />
               </Button>
             ))}
           </div>

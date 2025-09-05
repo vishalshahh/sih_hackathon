@@ -7,275 +7,265 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Plus, Edit, Save, X, Languages, FileText, BookOpen, CheckCircle } from "lucide-react"
+import { ScrollArea } from "@/components/ui/scroll-area"
+import { 
+  FileText, 
+  Search, 
+  Plus, 
+  Edit, 
+  Trash2, 
+  Save, 
+  X,
+  Globe,
+  MessageSquare,
+  AlertTriangle
+} from "lucide-react"
+import { mockContent } from "@/lib/mock-data/content-data"
 
-const languages = [
-  { code: "en", name: "English", flag: "🇺🇸" },
-  { code: "hi", name: "हिंदी", flag: "🇮🇳" },
-  { code: "es", name: "Español", flag: "🇪🇸" },
-  { code: "ar", name: "العربية", flag: "🇸🇦" },
-]
+export default function ContentManagement() {
+  const [searchTerm, setSearchTerm] = useState("")
+  const [selectedContent, setSelectedContent] = useState<any>(null)
+  const [isEditing, setIsEditing] = useState(false)
+  const [editForm, setEditForm] = useState({
+    title: "",
+    content: "",
+    category: "",
+    language: "",
+    status: "active"
+  })
 
-const mockTranslations = {
-  en: {
-    "responses.greeting": "Hello! I'm your AI healthcare assistant. How can I help you today?",
-    "responses.symptoms": "I understand you're experiencing symptoms. Can you tell me more details?",
-    "responses.emergency": "This sounds like an emergency. Please contact emergency services immediately.",
-    "responses.medication": "I can help you with medication information. What would you like to know?",
-  },
-  hi: {
-    "responses.greeting": "नमस्ते! मैं आपका AI स्वास्थ्य सहायक हूं। आज मैं आपकी कैसे मदद कर सकता हूं?",
-    "responses.symptoms": "मैं समझता हूं कि आप लक्षणों का अनुभव कर रहे हैं। क्या आप मुझे और विवरण बता सकते हैं?",
-    "responses.emergency": "यह एक आपातकालीन स्थिति की तरह लगता है। कृपया तुरंत आपातकालीन सेवाओं से संपर्क करें।",
-    "responses.medication": "मैं आपकी दवा की जानकारी के साथ मदद कर सकता हूं। आप क्या जानना चाहते हैं?",
-  },
-  es: {
-    "responses.greeting": "¡Hola! Soy tu asistente de salud con IA. ¿Cómo puedo ayudarte hoy?",
-    "responses.symptoms": "Entiendo que estás experimentando síntomas. ¿Puedes contarme más detalles?",
-    "responses.emergency": "Esto suena como una emergencia. Por favor contacta los servicios de emergencia inmediatamente.",
-    "responses.medication": "Puedo ayudarte con información sobre medicamentos. ¿Qué te gustaría saber?",
-  },
-  ar: {
-    "responses.greeting": "مرحباً! أنا مساعدك الطبي الذكي. كيف يمكنني مساعدتك اليوم؟",
-    "responses.symptoms": "أفهم أنك تعاني من أعراض. هل يمكنك إخباري بمزيد من التفاصيل؟",
-    "responses.emergency": "يبدو هذا كحالة طوارئ. يرجى الاتصال بخدمات الطوارئ فوراً.",
-    "responses.medication": "يمكنني مساعدتك بمعلومات الأدوية. ماذا تريد أن تعرف؟",
-  },
-}
+  const filteredContent = mockContent.filter(item =>
+    item.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    item.category.toLowerCase().includes(searchTerm.toLowerCase())
+  )
 
-export function ContentManagement() {
-  const [selectedLanguage, setSelectedLanguage] = useState("en")
-  const [editingKey, setEditingKey] = useState<string | null>(null)
-  const [editValue, setEditValue] = useState("")
-
-  const handleEdit = (key: string) => {
-    setEditingKey(key)
-    setEditValue(mockTranslations[selectedLanguage as keyof typeof mockTranslations][key] || "")
+  const handleEdit = (content: any) => {
+    setSelectedContent(content)
+    setEditForm({
+      title: content.title,
+      content: content.content,
+      category: content.category,
+      language: content.language,
+      status: content.status
+    })
+    setIsEditing(true)
   }
 
   const handleSave = () => {
-    // Handle save logic here
-    console.log("Saving translation:", editingKey, editValue)
-    setEditingKey(null)
-    setEditValue("")
+    // In a real app, this would update the content
+    console.log("Saving content:", editForm)
+    setIsEditing(false)
+    setSelectedContent(null)
   }
 
   const handleCancel = () => {
-    setEditingKey(null)
-    setEditValue("")
+    setIsEditing(false)
+    setSelectedContent(null)
+  }
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case "active": return "bg-green-100 text-green-800"
+      case "draft": return "bg-yellow-100 text-yellow-800"
+      case "archived": return "bg-gray-100 text-gray-800"
+      default: return "bg-gray-100 text-gray-800"
+    }
+  }
+
+  const getCategoryIcon = (category: string) => {
+    switch (category) {
+      case "FAQ": return <MessageSquare className="h-4 w-4" />
+      case "Emergency": return <AlertTriangle className="h-4 w-4" />
+      case "General": return <FileText className="h-4 w-4" />
+      default: return <Globe className="h-4 w-4" />
+    }
   }
 
   return (
-    <div className="space-y-4 sm:space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h2 className="text-xl sm:text-2xl font-bold">Content Management</h2>
-          <p className="text-sm sm:text-base text-muted-foreground">Manage multilingual content and response templates</p>
-        </div>
-        <Button className="text-sm">
-          <Plus className="w-4 h-4 mr-2" />
-          Add Translation Key
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <h2 className="text-2xl font-bold">Content Management</h2>
+        <Button className="flex items-center space-x-2">
+          <Plus className="h-4 w-4" />
+          <span>Add Content</span>
         </Button>
       </div>
 
-      <Tabs defaultValue="translations" className="space-y-4 sm:space-y-6">
-        <TabsList className="grid w-full grid-cols-2 sm:grid-cols-4">
-          <TabsTrigger value="translations" className="text-xs sm:text-sm">Translations</TabsTrigger>
-          <TabsTrigger value="templates" className="text-xs sm:text-sm">Response Templates</TabsTrigger>
-          <TabsTrigger value="medical-terms" className="text-xs sm:text-sm">Medical Terms</TabsTrigger>
-          <TabsTrigger value="validation" className="text-xs sm:text-sm">Content Validation</TabsTrigger>
-        </TabsList>
-
-        <TabsContent value="translations" className="space-y-4 sm:space-y-6">
-          {/* Language Selector */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Content List */}
+        <div className="lg:col-span-2">
           <Card>
             <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
-                <Languages className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
-                Language Selection
-              </CardTitle>
+              <div className="flex items-center space-x-4">
+                <div className="flex-1">
+                  <Input
+                    placeholder="Search content..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="w-full"
+                  />
+                </div>
+                <Button variant="outline" size="sm">
+                  <Search className="h-4 w-4" />
+                </Button>
+              </div>
             </CardHeader>
             <CardContent>
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                {languages.map((lang) => (
-                  <Button
-                    key={lang.code}
-                    variant={selectedLanguage === lang.code ? "default" : "outline"}
-                    className="justify-start text-xs sm:text-sm"
-                    onClick={() => setSelectedLanguage(lang.code)}
-                  >
-                    <span className="mr-2">{lang.flag}</span>
-                    {lang.name}
-                  </Button>
-                ))}
-              </div>
+              <ScrollArea className="h-[600px]">
+                <div className="space-y-4">
+                  {filteredContent.map((content) => (
+                    <div
+                      key={content.id}
+                      className="border rounded-lg p-4 hover:bg-gray-50 cursor-pointer"
+                      onClick={() => setSelectedContent(content)}
+                    >
+                      <div className="flex items-start justify-between">
+                        <div className="flex-1">
+                          <div className="flex items-center space-x-2 mb-2">
+                            {getCategoryIcon(content.category)}
+                            <h3 className="font-semibold">{content.title}</h3>
+                            <Badge className={getStatusColor(content.status)}>
+                              {content.status}
+                            </Badge>
+                          </div>
+                          <p className="text-sm text-gray-600 mb-2">
+                            {content.content.substring(0, 100)}...
+                          </p>
+                          <div className="flex items-center space-x-4 text-xs text-gray-500">
+                            <span>Category: {content.category}</span>
+                            <span>Language: {content.language}</span>
+                            <span>Updated: {content.lastUpdated}</span>
+                          </div>
+                        </div>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            handleEdit(content)
+                          }}
+                        >
+                          <Edit className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </ScrollArea>
             </CardContent>
           </Card>
+        </div>
 
-          {/* Translation Editor */}
+        {/* Content Details */}
+        <div className="lg:col-span-1">
           <Card>
             <CardHeader>
-              <CardTitle className="text-base sm:text-lg">Translation Editor</CardTitle>
+              <CardTitle>Content Details</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="space-y-4">
-                {Object.entries(mockTranslations[selectedLanguage as keyof typeof mockTranslations]).map(([key, value]) => (
-                  <div key={key} className="border rounded-lg p-4">
-                    <div className="flex items-center justify-between mb-2">
-                      <h4 className="font-medium text-sm sm:text-base">{key}</h4>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => handleEdit(key)}
-                        className="text-xs"
-                      >
-                        <Edit className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
-                        Edit
-                      </Button>
-                    </div>
-                    
-                    {editingKey === key ? (
-                      <div className="space-y-3">
-                        <Textarea
-                          value={editValue}
-                          onChange={(e) => setEditValue(e.target.value)}
-                          className="min-h-20 text-sm"
+              {selectedContent ? (
+                <div className="space-y-4">
+                  {isEditing ? (
+                    <div className="space-y-4">
+                      <div>
+                        <label className="text-sm font-medium">Title</label>
+                        <Input
+                          value={editForm.title}
+                          onChange={(e) => setEditForm({...editForm, title: e.target.value})}
+                          className="mt-1"
                         />
-                        <div className="flex gap-2">
-                          <Button size="sm" onClick={handleSave} className="text-xs">
-                            <Save className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
-                            Save
-                          </Button>
-                          <Button size="sm" variant="outline" onClick={handleCancel} className="text-xs">
-                            <X className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
-                            Cancel
-                          </Button>
+                      </div>
+                      <div>
+                        <label className="text-sm font-medium">Category</label>
+                        <Input
+                          value={editForm.category}
+                          onChange={(e) => setEditForm({...editForm, category: e.target.value})}
+                          className="mt-1"
+                        />
+                      </div>
+                      <div>
+                        <label className="text-sm font-medium">Language</label>
+                        <Input
+                          value={editForm.language}
+                          onChange={(e) => setEditForm({...editForm, language: e.target.value})}
+                          className="mt-1"
+                        />
+                      </div>
+                      <div>
+                        <label className="text-sm font-medium">Status</label>
+                        <select
+                          value={editForm.status}
+                          onChange={(e) => setEditForm({...editForm, status: e.target.value})}
+                          className="w-full mt-1 p-2 border rounded-md"
+                        >
+                          <option value="active">Active</option>
+                          <option value="draft">Draft</option>
+                          <option value="archived">Archived</option>
+                        </select>
+                      </div>
+                      <div>
+                        <label className="text-sm font-medium">Content</label>
+                        <Textarea
+                          value={editForm.content}
+                          onChange={(e) => setEditForm({...editForm, content: e.target.value})}
+                          className="mt-1 h-32"
+                        />
+                      </div>
+                      <div className="flex space-x-2">
+                        <Button onClick={handleSave} size="sm">
+                          <Save className="h-4 w-4 mr-1" />
+                          Save
+                        </Button>
+                        <Button onClick={handleCancel} variant="outline" size="sm">
+                          <X className="h-4 w-4 mr-1" />
+                          Cancel
+                        </Button>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="space-y-4">
+                      <div>
+                        <h3 className="font-semibold">{selectedContent.title}</h3>
+                        <div className="flex items-center space-x-2 mt-1">
+                          <Badge className={getStatusColor(selectedContent.status)}>
+                            {selectedContent.status}
+                          </Badge>
+                          <span className="text-sm text-gray-500">
+                            {selectedContent.category}
+                          </span>
                         </div>
                       </div>
-                    ) : (
-                      <p className="text-sm text-muted-foreground">{value}</p>
-                    )}
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="templates" className="space-y-4 sm:space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
-                <FileText className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
-                Response Templates
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <h4 className="font-medium text-sm sm:text-base">Greeting Template</h4>
-                    <Textarea
-                      placeholder="Enter greeting template..."
-                      className="min-h-20 text-sm"
-                      defaultValue="Hello! I'm your AI healthcare assistant. How can I help you today?"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <h4 className="font-medium text-sm sm:text-base">Emergency Template</h4>
-                    <Textarea
-                      placeholder="Enter emergency template..."
-                      className="min-h-20 text-sm"
-                      defaultValue="This sounds like an emergency. Please contact emergency services immediately."
-                    />
-                  </div>
-                </div>
-                <Button className="text-sm">
-                  <Save className="w-4 h-4 mr-2" />
-                  Save Templates
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="medical-terms" className="space-y-4 sm:space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
-                <BookOpen className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
-                Medical Terms Database
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div>
-                    <label className="text-sm font-medium mb-2 block">Add New Term</label>
-                    <Input placeholder="Enter medical term..." className="text-sm" />
-                  </div>
-                  <div>
-                    <label className="text-sm font-medium mb-2 block">Category</label>
-                    <select className="w-full p-2 border border-input rounded-md text-sm">
-                      <option>Symptoms</option>
-                      <option>Medications</option>
-                      <option>Conditions</option>
-                      <option>Procedures</option>
-                    </select>
-                  </div>
-                </div>
-                <Button className="text-sm">
-                  <Plus className="w-4 h-4 mr-2" />
-                  Add Term
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="validation" className="space-y-4 sm:space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
-                <CheckCircle className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
-                Content Validation
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                  <div className="text-center p-4 border rounded-lg">
-                    <div className="text-2xl font-bold text-green-600">95%</div>
-                    <div className="text-sm text-muted-foreground">Translation Coverage</div>
-                  </div>
-                  <div className="text-center p-4 border rounded-lg">
-                    <div className="text-2xl font-bold text-blue-600">12</div>
-                    <div className="text-sm text-muted-foreground">Missing Translations</div>
-                  </div>
-                  <div className="text-center p-4 border rounded-lg">
-                    <div className="text-2xl font-bold text-orange-600">3</div>
-                    <div className="text-sm text-muted-foreground">Validation Errors</div>
-                  </div>
-                </div>
-                
-                <div className="space-y-2">
-                  <h4 className="font-medium text-sm sm:text-base">Validation Issues</h4>
-                  <div className="space-y-2">
-                    <div className="flex items-center justify-between p-3 border rounded-lg">
-                      <span className="text-sm">Missing translation for "responses.emergency" in Arabic</span>
-                      <Badge variant="outline" className="text-xs">Fix</Badge>
+                      <div>
+                        <p className="text-sm text-gray-600">
+                          {selectedContent.content}
+                        </p>
+                      </div>
+                      <div className="text-xs text-gray-500 space-y-1">
+                        <div>Language: {selectedContent.language}</div>
+                        <div>Last Updated: {selectedContent.lastUpdated}</div>
+                        <div>Created: {selectedContent.createdAt}</div>
+                      </div>
+                      <Button
+                        onClick={() => handleEdit(selectedContent)}
+                        className="w-full"
+                        size="sm"
+                      >
+                        <Edit className="h-4 w-4 mr-1" />
+                        Edit Content
+                      </Button>
                     </div>
-                    <div className="flex items-center justify-between p-3 border rounded-lg">
-                      <span className="text-sm">Inconsistent terminology in Hindi responses</span>
-                      <Badge variant="outline" className="text-xs">Review</Badge>
-                    </div>
-                  </div>
+                  )}
                 </div>
-              </div>
+              ) : (
+                <div className="text-center text-gray-500 py-8">
+                  <FileText className="h-12 w-12 mx-auto mb-2 opacity-50" />
+                  <p>Select content to view details</p>
+                </div>
+              )}
             </CardContent>
           </Card>
-        </TabsContent>
-      </Tabs>
+        </div>
+      </div>
     </div>
   )
 }

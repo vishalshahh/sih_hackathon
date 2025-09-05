@@ -1,23 +1,34 @@
 import { type NextRequest, NextResponse } from "next/server"
-import { HealthAPIService } from "@/lib/health-apis"
+import { MockDataService } from "@/lib/mock-data-service"
 
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url)
     const location = searchParams.get("location")
-    const type = searchParams.get("type") || undefined
+    const type = searchParams.get("type")
+    const specialty = searchParams.get("specialty")
 
-    if (!location) {
-      return NextResponse.json({ error: "Location is required" }, { status: 400 })
+    let providers = MockDataService.getProviderData()
+
+    if (location) {
+      providers = MockDataService.getProvidersByLocation(location)
     }
 
-    const result = await HealthAPIService.findHealthcareProviders(location, type)
-
-    if (!result.success) {
-      return NextResponse.json({ error: result.error }, { status: 400 })
+    if (type) {
+      providers = providers.filter(provider => provider.type === type)
     }
 
-    return NextResponse.json(result)
+    if (specialty) {
+      providers = providers.filter(provider => 
+        provider.specialty.toLowerCase().includes(specialty.toLowerCase())
+      )
+    }
+
+    return NextResponse.json({
+      success: true,
+      data: providers,
+      source: "Mock Healthcare Providers Data"
+    })
   } catch (error) {
     return NextResponse.json({ error: "Internal server error" }, { status: 500 })
   }

@@ -1,5 +1,5 @@
 import { type NextRequest, NextResponse } from "next/server"
-import { HealthAPIService } from "@/lib/health-apis"
+import { MockDataService } from "@/lib/mock-data-service"
 
 export async function GET(request: NextRequest) {
   try {
@@ -10,13 +10,13 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: "Drug name is required" }, { status: 400 })
     }
 
-    const result = await HealthAPIService.getDrugInteractions(drugName)
+    const interactions = MockDataService.getDrugInteractionsForDrug(drugName)
 
-    if (!result.success) {
-      return NextResponse.json({ error: result.error }, { status: 400 })
-    }
-
-    return NextResponse.json(result)
+    return NextResponse.json({
+      success: true,
+      data: interactions,
+      source: "Mock Drug Interactions Data"
+    })
   } catch (error) {
     return NextResponse.json({ error: "Internal server error" }, { status: 500 })
   }

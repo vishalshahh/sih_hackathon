@@ -81,6 +81,8 @@ export class WhatsAppService {
   }
 }
 
+import { mockMessagingData } from './mock-data/messaging-data';
+
 export class SMSService {
   private config: SMSConfig
 
@@ -88,8 +90,26 @@ export class SMSService {
     this.config = config
   }
 
+  // Check if we're in development mode and should skip external API calls
+  private static isDevelopmentMode(): boolean {
+    return process.env.NODE_ENV === 'development'
+  }
+
   async sendSMS(to: string, message: string): Promise<boolean> {
     try {
+      if (SMSService.isDevelopmentMode()) {
+        console.log(`[MOCK SMS] Sending SMS to ${to}: ${message}`);
+        // Simulate a successful send and update mock data if necessary
+        const smsChannel = mockMessagingData.find(m => m.channel === "sms");
+        if (smsChannel) {
+          smsChannel.statistics.totalSent++;
+          smsChannel.statistics.totalDelivered++;
+          smsChannel.statistics.successRate = (smsChannel.statistics.totalDelivered / smsChannel.statistics.totalSent) * 100;
+          smsChannel.lastActivity = new Date().toISOString();
+        }
+        return true;
+      }
+
       const auth = Buffer.from(`${this.config.accountSid}:${this.config.authToken}`).toString("base64")
 
       const response = await fetch(

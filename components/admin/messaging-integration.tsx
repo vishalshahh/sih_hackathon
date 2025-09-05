@@ -1,327 +1,359 @@
 "use client"
 
 import { useState } from "react"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
+import { Textarea } from "@/components/ui/textarea"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Badge } from "@/components/ui/badge"
-import { MessageSquare, Phone, Settings, Send, CheckCircle, XCircle } from "lucide-react"
+import { MessageSquare, Send, Settings, TestTube, Users, Clock, CheckCircle, AlertCircle } from "lucide-react"
+
+const mockMessageStats = {
+  totalMessages: 15420,
+  whatsappMessages: 8934,
+  smsMessages: 6486,
+  deliveryRate: 98.5,
+  responseRate: 85.2,
+}
+
+const mockRecentMessages = [
+  {
+    id: "msg_001",
+    channel: "whatsapp",
+    recipient: "+1234567890",
+    message: "Your appointment is confirmed for tomorrow at 2 PM",
+    status: "delivered",
+    timestamp: "2024-01-15T10:30:00Z",
+  },
+  {
+    id: "msg_002",
+    channel: "sms",
+    recipient: "+0987654321",
+    message: "Emergency alert: High fever symptoms detected",
+    status: "sent",
+    timestamp: "2024-01-15T10:25:00Z",
+  },
+  {
+    id: "msg_003",
+    channel: "whatsapp",
+    recipient: "+1122334455",
+    message: "Thank you for using our health service",
+    status: "delivered",
+    timestamp: "2024-01-15T10:20:00Z",
+  },
+]
 
 export function MessagingIntegration() {
-  const [whatsappConfig, setWhatsappConfig] = useState({
-    phoneNumberId: "",
-    accessToken: "",
-    webhookVerifyToken: "",
-    businessAccountId: "",
+  const [testMessage, setTestMessage] = useState({
+    channel: "whatsapp",
+    recipient: "",
+    message: "",
   })
 
-  const [smsConfig, setSmsConfig] = useState({
-    accountSid: "",
-    authToken: "",
-    phoneNumber: "",
-  })
-
-  const [testMessage, setTestMessage] = useState("")
-  const [testPhone, setTestPhone] = useState("")
-  const [connectionStatus, setConnectionStatus] = useState({
-    whatsapp: false,
-    sms: false,
-  })
-
-  const testWhatsAppConnection = async () => {
-    try {
-      // Test WhatsApp API connection
-      const response = await fetch("/api/messaging/test/whatsapp", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(whatsappConfig),
-      })
-
-      const result = await response.json()
-      setConnectionStatus((prev) => ({ ...prev, whatsapp: result.success }))
-    } catch (error) {
-      setConnectionStatus((prev) => ({ ...prev, whatsapp: false }))
+  const getChannelColor = (channel: string) => {
+    switch (channel) {
+      case "whatsapp":
+        return "bg-green-100 text-green-800"
+      case "sms":
+        return "bg-blue-100 text-blue-800"
+      default:
+        return "bg-gray-100 text-gray-800"
     }
   }
 
-  const testSMSConnection = async () => {
-    try {
-      // Test SMS API connection
-      const response = await fetch("/api/messaging/test/sms", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(smsConfig),
-      })
-
-      const result = await response.json()
-      setConnectionStatus((prev) => ({ ...prev, sms: result.success }))
-    } catch (error) {
-      setConnectionStatus((prev) => ({ ...prev, sms: false }))
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case "delivered":
+        return "bg-green-100 text-green-800"
+      case "sent":
+        return "bg-blue-100 text-blue-800"
+      case "failed":
+        return "bg-red-100 text-red-800"
+      default:
+        return "bg-gray-100 text-gray-800"
     }
   }
 
-  const sendTestMessage = async (channel: "whatsapp" | "sms") => {
-    try {
-      const response = await fetch("/api/messaging/send-test", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          channel,
-          to: testPhone,
-          message: testMessage,
-        }),
-      })
-
-      const result = await response.json()
-      if (result.success) {
-        alert(`Test message sent successfully via ${channel}!`)
-      } else {
-        alert(`Failed to send test message: ${result.error}`)
-      }
-    } catch (error) {
-      alert("Error sending test message")
-    }
+  const handleSendTest = () => {
+    console.log("Sending test message:", testMessage)
+    // Handle test message sending logic here
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center gap-2">
-        <MessageSquare className="h-6 w-6 text-emerald-600" />
-        <h2 className="text-2xl font-bold">Messaging Integration</h2>
+    <div className="space-y-4 sm:space-y-6">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <h2 className="text-xl sm:text-2xl font-bold">Messaging Integration</h2>
+          <p className="text-sm sm:text-base text-muted-foreground">Manage WhatsApp and SMS messaging services</p>
+        </div>
+        <Button className="text-sm">
+          <Settings className="w-4 h-4 mr-2" />
+          Settings
+        </Button>
       </div>
 
-      <Tabs defaultValue="whatsapp" className="space-y-4">
-        <TabsList className="grid w-full grid-cols-3">
-          <TabsTrigger value="whatsapp" className="flex items-center gap-2">
-            <MessageSquare className="h-4 w-4" />
-            WhatsApp
-            {connectionStatus.whatsapp ? (
-              <CheckCircle className="h-4 w-4 text-green-500" />
-            ) : (
-              <XCircle className="h-4 w-4 text-red-500" />
-            )}
-          </TabsTrigger>
-          <TabsTrigger value="sms" className="flex items-center gap-2">
-            <Phone className="h-4 w-4" />
-            SMS
-            {connectionStatus.sms ? (
-              <CheckCircle className="h-4 w-4 text-green-500" />
-            ) : (
-              <XCircle className="h-4 w-4 text-red-500" />
-            )}
-          </TabsTrigger>
-          <TabsTrigger value="test" className="flex items-center gap-2">
-            <Send className="h-4 w-4" />
-            Test
-          </TabsTrigger>
+      {/* Message Statistics */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-xs sm:text-sm font-medium">Total Messages</CardTitle>
+            <MessageSquare className="h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-lg sm:text-2xl font-bold">{mockMessageStats.totalMessages.toLocaleString()}</div>
+            <p className="text-xs text-muted-foreground">
+              <span className="text-green-600">+12.5%</span> from last month
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-xs sm:text-sm font-medium">WhatsApp</CardTitle>
+            <MessageSquare className="h-3 w-3 sm:h-4 sm:w-4 text-green-600" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-lg sm:text-2xl font-bold">{mockMessageStats.whatsappMessages.toLocaleString()}</div>
+            <p className="text-xs text-muted-foreground">58% of total</p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-xs sm:text-sm font-medium">SMS</CardTitle>
+            <MessageSquare className="h-3 w-3 sm:h-4 sm:w-4 text-blue-600" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-lg sm:text-2xl font-bold">{mockMessageStats.smsMessages.toLocaleString()}</div>
+            <p className="text-xs text-muted-foreground">42% of total</p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-xs sm:text-sm font-medium">Delivery Rate</CardTitle>
+            <CheckCircle className="h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-lg sm:text-2xl font-bold">{mockMessageStats.deliveryRate}%</div>
+            <p className="text-xs text-muted-foreground">
+              <span className="text-green-600">+0.5%</span> improvement
+            </p>
+          </CardContent>
+        </Card>
+      </div>
+
+      <Tabs defaultValue="overview" className="space-y-4 sm:space-y-6">
+        <TabsList className="grid w-full grid-cols-2 sm:grid-cols-4">
+          <TabsTrigger value="overview" className="text-xs sm:text-sm">Overview</TabsTrigger>
+          <TabsTrigger value="test" className="text-xs sm:text-sm">Test Messages</TabsTrigger>
+          <TabsTrigger value="history" className="text-xs sm:text-sm">Message History</TabsTrigger>
+          <TabsTrigger value="settings" className="text-xs sm:text-sm">Settings</TabsTrigger>
         </TabsList>
 
-        <TabsContent value="whatsapp">
+        <TabsContent value="overview" className="space-y-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-base sm:text-lg">Channel Performance</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <div className="w-3 h-3 bg-green-500 rounded-full"></div>
+                      <span className="text-sm">WhatsApp</span>
+                    </div>
+                    <div className="text-right">
+                      <div className="text-sm font-medium">{mockMessageStats.whatsappMessages.toLocaleString()}</div>
+                      <div className="text-xs text-muted-foreground">messages</div>
+                    </div>
+                  </div>
+                  
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
+                      <span className="text-sm">SMS</span>
+                    </div>
+                    <div className="text-right">
+                      <div className="text-sm font-medium">{mockMessageStats.smsMessages.toLocaleString()}</div>
+                      <div className="text-xs text-muted-foreground">messages</div>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-base sm:text-lg">Delivery Statistics</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm">Delivery Rate</span>
+                    <span className="text-sm font-medium">{mockMessageStats.deliveryRate}%</span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm">Response Rate</span>
+                    <span className="text-sm font-medium">{mockMessageStats.responseRate}%</span>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </TabsContent>
+
+        <TabsContent value="test" className="space-y-4">
           <Card>
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <MessageSquare className="h-5 w-5" />
-                WhatsApp Business API Configuration
+              <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
+                <TestTube className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
+                Send Test Message
               </CardTitle>
-              <CardDescription>
-                Configure your WhatsApp Business API credentials for healthcare messaging
-              </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="phoneNumberId">Phone Number ID</Label>
-                  <Input
-                    id="phoneNumberId"
-                    value={whatsappConfig.phoneNumberId}
-                    onChange={(e) => setWhatsappConfig((prev) => ({ ...prev, phoneNumberId: e.target.value }))}
-                    placeholder="Enter WhatsApp Phone Number ID"
-                  />
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="text-sm font-medium mb-2 block">Channel</label>
+                  <select
+                    className="w-full p-2 border border-input rounded-md text-sm"
+                    value={testMessage.channel}
+                    onChange={(e) => setTestMessage({ ...testMessage, channel: e.target.value })}
+                  >
+                    <option value="whatsapp">WhatsApp</option>
+                    <option value="sms">SMS</option>
+                  </select>
                 </div>
-                <div className="space-y-2">
-                  <Label htmlFor="accessToken">Access Token</Label>
+                <div>
+                  <label className="text-sm font-medium mb-2 block">Recipient</label>
                   <Input
-                    id="accessToken"
-                    type="password"
-                    value={whatsappConfig.accessToken}
-                    onChange={(e) => setWhatsappConfig((prev) => ({ ...prev, accessToken: e.target.value }))}
-                    placeholder="Enter WhatsApp Access Token"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="webhookToken">Webhook Verify Token</Label>
-                  <Input
-                    id="webhookToken"
-                    value={whatsappConfig.webhookVerifyToken}
-                    onChange={(e) => setWhatsappConfig((prev) => ({ ...prev, webhookVerifyToken: e.target.value }))}
-                    placeholder="Enter Webhook Verify Token"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="businessAccountId">Business Account ID</Label>
-                  <Input
-                    id="businessAccountId"
-                    value={whatsappConfig.businessAccountId}
-                    onChange={(e) => setWhatsappConfig((prev) => ({ ...prev, businessAccountId: e.target.value }))}
-                    placeholder="Enter Business Account ID"
+                    placeholder="Enter phone number"
+                    value={testMessage.recipient}
+                    onChange={(e) => setTestMessage({ ...testMessage, recipient: e.target.value })}
+                    className="text-sm"
                   />
                 </div>
               </div>
-
-              <div className="flex gap-2">
-                <Button onClick={testWhatsAppConnection} variant="outline">
-                  <Settings className="h-4 w-4 mr-2" />
-                  Test Connection
-                </Button>
-                <Badge variant={connectionStatus.whatsapp ? "default" : "destructive"}>
-                  {connectionStatus.whatsapp ? "Connected" : "Disconnected"}
-                </Badge>
+              
+              <div>
+                <label className="text-sm font-medium mb-2 block">Message</label>
+                <Textarea
+                  placeholder="Enter test message..."
+                  value={testMessage.message}
+                  onChange={(e) => setTestMessage({ ...testMessage, message: e.target.value })}
+                  rows={3}
+                  className="text-sm"
+                />
               </div>
+              
+              <Button onClick={handleSendTest} className="text-sm">
+                <Send className="w-4 h-4 mr-2" />
+                Send Test Message
+              </Button>
+            </CardContent>
+          </Card>
+        </TabsContent>
 
-              <div className="bg-blue-50 p-4 rounded-lg">
-                <h4 className="font-semibold text-blue-900 mb-2">Setup Instructions:</h4>
-                <ol className="text-sm text-blue-800 space-y-1">
-                  <li>1. Create a WhatsApp Business Account</li>
-                  <li>2. Set up a WhatsApp Business API application</li>
-                  <li>
-                    3. Configure webhook URL: <code>/api/messaging/whatsapp</code>
-                  </li>
-                  <li>4. Add the credentials above and test the connection</li>
-                </ol>
+        <TabsContent value="history" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base sm:text-lg">Recent Messages</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-3">
+                {mockRecentMessages.map((message) => (
+                  <div key={message.id} className="flex items-center justify-between p-3 border rounded-lg">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-1">
+                        <Badge
+                          variant="outline"
+                          className={`text-xs ${getChannelColor(message.channel)}`}
+                        >
+                          {message.channel}
+                        </Badge>
+                        <span className="text-sm font-medium">{message.recipient}</span>
+                        <Badge
+                          variant="outline"
+                          className={`text-xs ${getStatusColor(message.status)}`}
+                        >
+                          {message.status}
+                        </Badge>
+                      </div>
+                      <p className="text-xs sm:text-sm text-muted-foreground mb-1">{message.message}</p>
+                      <p className="text-xs text-muted-foreground">
+                        {new Date(message.timestamp).toLocaleString()}
+                      </p>
+                    </div>
+                  </div>
+                ))}
               </div>
             </CardContent>
           </Card>
         </TabsContent>
 
-        <TabsContent value="sms">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Phone className="h-5 w-5" />
-                SMS Configuration (Twilio)
-              </CardTitle>
-              <CardDescription>Configure your Twilio credentials for SMS healthcare messaging</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="accountSid">Account SID</Label>
+        <TabsContent value="settings" className="space-y-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-base sm:text-lg">WhatsApp Settings</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div>
+                  <label className="text-sm font-medium mb-2 block">API Token</label>
                   <Input
-                    id="accountSid"
-                    value={smsConfig.accountSid}
-                    onChange={(e) => setSmsConfig((prev) => ({ ...prev, accountSid: e.target.value }))}
-                    placeholder="Enter Twilio Account SID"
+                    placeholder="Enter WhatsApp API token"
+                    className="text-sm"
+                    defaultValue="••••••••••••••••"
                   />
                 </div>
-                <div className="space-y-2">
-                  <Label htmlFor="authToken">Auth Token</Label>
+                <div>
+                  <label className="text-sm font-medium mb-2 block">Webhook URL</label>
                   <Input
-                    id="authToken"
-                    type="password"
-                    value={smsConfig.authToken}
-                    onChange={(e) => setSmsConfig((prev) => ({ ...prev, authToken: e.target.value }))}
-                    placeholder="Enter Twilio Auth Token"
+                    placeholder="Enter webhook URL"
+                    className="text-sm"
+                    defaultValue="https://api.healthbot.com/webhook/whatsapp"
                   />
                 </div>
-                <div className="space-y-2 col-span-2">
-                  <Label htmlFor="phoneNumber">Twilio Phone Number</Label>
-                  <Input
-                    id="phoneNumber"
-                    value={smsConfig.phoneNumber}
-                    onChange={(e) => setSmsConfig((prev) => ({ ...prev, phoneNumber: e.target.value }))}
-                    placeholder="Enter Twilio Phone Number (e.g., +1234567890)"
-                  />
-                </div>
-              </div>
-
-              <div className="flex gap-2">
-                <Button onClick={testSMSConnection} variant="outline">
-                  <Settings className="h-4 w-4 mr-2" />
+                <Button size="sm" className="text-xs">
+                  <CheckCircle className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
                   Test Connection
                 </Button>
-                <Badge variant={connectionStatus.sms ? "default" : "destructive"}>
-                  {connectionStatus.sms ? "Connected" : "Disconnected"}
-                </Badge>
-              </div>
+              </CardContent>
+            </Card>
 
-              <div className="bg-blue-50 p-4 rounded-lg">
-                <h4 className="font-semibold text-blue-900 mb-2">Setup Instructions:</h4>
-                <ol className="text-sm text-blue-800 space-y-1">
-                  <li>1. Create a Twilio account</li>
-                  <li>2. Purchase a phone number for SMS</li>
-                  <li>
-                    3. Configure webhook URL: <code>/api/messaging/sms</code>
-                  </li>
-                  <li>4. Add the credentials above and test the connection</li>
-                </ol>
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="test">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Send className="h-5 w-5" />
-                Test Messaging
-              </CardTitle>
-              <CardDescription>Send test messages to verify your integrations are working</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="testPhone">Test Phone Number</Label>
-                <Input
-                  id="testPhone"
-                  value={testPhone}
-                  onChange={(e) => setTestPhone(e.target.value)}
-                  placeholder="Enter phone number (e.g., +1234567890)"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="testMessage">Test Message</Label>
-                <Input
-                  id="testMessage"
-                  value={testMessage}
-                  onChange={(e) => setTestMessage(e.target.value)}
-                  placeholder="Enter test message"
-                />
-              </div>
-
-              <div className="flex gap-2">
-                <Button
-                  onClick={() => sendTestMessage("whatsapp")}
-                  disabled={!connectionStatus.whatsapp || !testPhone || !testMessage}
-                >
-                  <MessageSquare className="h-4 w-4 mr-2" />
-                  Send via WhatsApp
-                </Button>
-                <Button
-                  onClick={() => sendTestMessage("sms")}
-                  disabled={!connectionStatus.sms || !testPhone || !testMessage}
-                  variant="outline"
-                >
-                  <Phone className="h-4 w-4 mr-2" />
-                  Send via SMS
-                </Button>
-              </div>
-
-              <div className="bg-yellow-50 p-4 rounded-lg">
-                <h4 className="font-semibold text-yellow-900 mb-2">Healthcare Message Examples:</h4>
-                <div className="text-sm text-yellow-800 space-y-1">
-                  <p>• "I have a fever and headache"</p>
-                  <p>• "What vaccines do I need?"</p>
-                  <p>• "Emergency - chest pain"</p>
-                  <p>• "Side effects of paracetamol"</p>
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-base sm:text-lg">SMS Settings</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div>
+                  <label className="text-sm font-medium mb-2 block">API Key</label>
+                  <Input
+                    placeholder="Enter SMS API key"
+                    className="text-sm"
+                    defaultValue="••••••••••••••••"
+                  />
                 </div>
-              </div>
-            </CardContent>
-          </Card>
+                <div>
+                  <label className="text-sm font-medium mb-2 block">Sender ID</label>
+                  <Input
+                    placeholder="Enter sender ID"
+                    className="text-sm"
+                    defaultValue="HEALTHBOT"
+                  />
+                </div>
+                <Button size="sm" className="text-xs">
+                  <CheckCircle className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
+                  Test Connection
+                </Button>
+              </CardContent>
+            </Card>
+          </div>
         </TabsContent>
       </Tabs>
     </div>
   )
 }
+   

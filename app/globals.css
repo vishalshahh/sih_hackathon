@@ -119,6 +119,37 @@
   .text-hover {
     @apply transition-colors duration-200 ease-out hover:text-foreground/80;
   }
+
+  /* Mobile-specific improvements */
+  @media (max-width: 640px) {
+    /* Ensure touch targets are at least 44px */
+    button, [role="button"], input, textarea, select {
+      min-height: 44px;
+    }
+    
+    /* Improve text readability on mobile */
+    body {
+      -webkit-text-size-adjust: 100%;
+      text-size-adjust: 100%;
+    }
+    
+    /* Better spacing for mobile */
+    .container {
+      padding-left: 1rem;
+      padding-right: 1rem;
+    }
+  }
+
+  /* Extra small screens (xs) - 475px and up */
+  @media (min-width: 475px) {
+    .xs\:inline {
+      display: inline;
+    }
+    
+    .xs\:hidden {
+      display: none;
+    }
+  }
 }
 
 /* Custom scrollbar */

@@ -26,7 +26,7 @@ export function LanguageSelector({ selectedLanguage, onLanguageChange }: Languag
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="outline" size="sm" className="gap-2 bg-transparent">
+        <Button variant="outline" size="sm" className="gap-2 bg-white text-black">
           <Globe className="w-4 h-4" />
           <span className="hidden sm:inline">
             {currentLanguage.flag} {currentLanguage.name}
@@ -34,12 +34,12 @@ export function LanguageSelector({ selectedLanguage, onLanguageChange }: Languag
           <span className="sm:hidden">{currentLanguage.flag}</span>
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-48">
+      <DropdownMenuContent align="end" className="w-48 z-50 bg-white text-black">
         {languages.map((language) => (
           <DropdownMenuItem
             key={language.code}
             onClick={() => onLanguageChange(language.code)}
-            className="flex items-center gap-2"
+            className="flex items-center gap-2 bg-white text-black"
           >
             <span>{language.flag}</span>
             <span>{language.name}</span>

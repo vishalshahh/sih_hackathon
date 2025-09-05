@@ -88,96 +88,38 @@ export function EmergencyAlerts() {
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
+    <div className="space-y-4 sm:space-y-6">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h2 className="text-2xl font-bold">Emergency Alerts</h2>
-          <p className="text-muted-foreground">Manage and broadcast emergency health alerts to users</p>
+          <h2 className="text-xl sm:text-2xl font-bold">Emergency Alerts</h2>
+          <p className="text-sm sm:text-base text-muted-foreground">Manage and broadcast emergency health alerts to users</p>
         </div>
-        <Button onClick={() => setIsCreatingAlert(true)}>
+        <Button onClick={() => setIsCreatingAlert(true)} className="text-sm">
           <Plus className="w-4 h-4 mr-2" />
           Create Alert
         </Button>
-      </div>
-
-      {/* Alert Statistics */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Active Alerts</CardTitle>
-            <AlertTriangle className="h-4 w-4 text-red-600" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">2</div>
-            <p className="text-xs text-muted-foreground">Currently broadcasting</p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Reach</CardTitle>
-            <Users className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">65,000</div>
-            <p className="text-xs text-muted-foreground">Users notified today</p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Response Rate</CardTitle>
-            <Send className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">68.5%</div>
-            <p className="text-xs text-muted-foreground">Users engaged with alerts</p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Avg Response Time</CardTitle>
-            <Clock className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">3.2min</div>
-            <p className="text-xs text-muted-foreground">Time to user engagement</p>
-          </CardContent>
-        </Card>
       </div>
 
       {/* Create Alert Form */}
       {isCreatingAlert && (
         <Card>
           <CardHeader>
-            <CardTitle>Create Emergency Alert</CardTitle>
+            <CardTitle className="text-base sm:text-lg">Create New Alert</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div>
-              <label className="text-sm font-medium mb-2 block">Alert Title</label>
-              <Input
-                placeholder="Enter alert title..."
-                value={newAlert.title}
-                onChange={(e) => setNewAlert({ ...newAlert, title: e.target.value })}
-              />
-            </div>
-
-            <div>
-              <label className="text-sm font-medium mb-2 block">Description</label>
-              <Textarea
-                placeholder="Enter detailed alert description..."
-                value={newAlert.description}
-                onChange={(e) => setNewAlert({ ...newAlert, description: e.target.value })}
-                className="min-h-[100px]"
-              />
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label className="text-sm font-medium mb-2 block">Severity Level</label>
+                <label className="text-sm font-medium mb-2 block">Alert Title</label>
+                <Input
+                  placeholder="Enter alert title"
+                  value={newAlert.title}
+                  onChange={(e) => setNewAlert({ ...newAlert, title: e.target.value })}
+                />
+              </div>
+              <div>
+                <label className="text-sm font-medium mb-2 block">Severity</label>
                 <select
-                  className="w-full p-2 border rounded-md"
+                  className="w-full p-2 border border-input rounded-md text-sm"
                   value={newAlert.severity}
                   onChange={(e) => setNewAlert({ ...newAlert, severity: e.target.value })}
                 >
@@ -186,23 +128,37 @@ export function EmergencyAlerts() {
                   <option value="high">High</option>
                 </select>
               </div>
-
-              <div>
-                <label className="text-sm font-medium mb-2 block">Location</label>
-                <Input
-                  placeholder="e.g., Mumbai, National"
-                  value={newAlert.location}
-                  onChange={(e) => setNewAlert({ ...newAlert, location: e.target.value })}
-                />
-              </div>
             </div>
-
+            
+            <div>
+              <label className="text-sm font-medium mb-2 block">Location</label>
+              <Input
+                placeholder="Enter affected location"
+                value={newAlert.location}
+                onChange={(e) => setNewAlert({ ...newAlert, location: e.target.value })}
+              />
+            </div>
+            
+            <div>
+              <label className="text-sm font-medium mb-2 block">Description</label>
+              <Textarea
+                placeholder="Enter alert description"
+                value={newAlert.description}
+                onChange={(e) => setNewAlert({ ...newAlert, description: e.target.value })}
+                rows={3}
+              />
+            </div>
+            
             <div className="flex gap-2">
-              <Button onClick={handleCreateAlert}>
+              <Button onClick={handleCreateAlert} className="text-sm">
                 <Send className="w-4 h-4 mr-2" />
-                Broadcast Alert
+                Send Alert
               </Button>
-              <Button variant="outline" onClick={() => setIsCreatingAlert(false)}>
+              <Button
+                variant="outline"
+                onClick={() => setIsCreatingAlert(false)}
+                className="text-sm"
+              >
                 Cancel
               </Button>
             </div>
@@ -212,77 +168,99 @@ export function EmergencyAlerts() {
 
       {/* Active Alerts */}
       <div className="space-y-4">
-        <h3 className="text-lg font-semibold">Current Alerts</h3>
-        {mockEmergencyAlerts.map((alert) => (
-          <Card key={alert.id}>
-            <CardContent className="p-6">
-              <div className="flex items-start justify-between mb-4">
-                <div className="flex-1">
-                  <div className="flex items-center gap-3 mb-2">
-                    <h3 className="font-semibold">{alert.title}</h3>
-                    <Badge className={getSeverityColor(alert.severity)}>{alert.severity}</Badge>
-                    <Badge className={getStatusColor(alert.status)}>{alert.status}</Badge>
+        <h3 className="text-lg font-semibold">Active Alerts</h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {mockEmergencyAlerts
+            .filter((alert) => alert.status === "active")
+            .map((alert) => (
+              <Card key={alert.id} className="border-l-4 border-l-red-500">
+                <CardHeader className="pb-3">
+                  <div className="flex items-start justify-between">
+                    <div className="flex-1">
+                      <CardTitle className="text-base sm:text-lg">{alert.title}</CardTitle>
+                      <p className="text-sm text-muted-foreground mt-1">{alert.description}</p>
+                    </div>
+                    <Badge
+                      variant="outline"
+                      className={`text-xs ${getSeverityColor(alert.severity)}`}
+                    >
+                      {alert.severity}
+                    </Badge>
                   </div>
-                  <p className="text-muted-foreground mb-3">{alert.description}</p>
-                  <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  <div className="flex items-center gap-4 text-sm">
                     <div className="flex items-center gap-1">
-                      <MapPin className="w-4 h-4" />
+                      <MapPin className="w-3 h-3 sm:w-4 sm:h-4 text-muted-foreground" />
                       <span>{alert.location}</span>
                     </div>
                     <div className="flex items-center gap-1">
-                      <Users className="w-4 h-4" />
-                      <span>{alert.affectedUsers.toLocaleString()} users</span>
+                      <Users className="w-3 h-3 sm:w-4 sm:h-4 text-muted-foreground" />
+                      <span>{alert.affectedUsers.toLocaleString()}</span>
                     </div>
+                  </div>
+                  
+                  <div className="flex items-center gap-4 text-sm text-muted-foreground">
                     <div className="flex items-center gap-1">
-                      <Clock className="w-4 h-4" />
+                      <Clock className="w-3 h-3 sm:w-4 sm:h-4" />
                       <span>{new Date(alert.createdAt).toLocaleDateString()}</span>
                     </div>
+                    <span>{alert.responses} responses</span>
                   </div>
-                </div>
-                <div className="flex gap-2">
-                  {alert.status === "active" && (
-                    <>
-                      <Button variant="outline" size="sm">
-                        Edit
-                      </Button>
-                      <Button variant="outline" size="sm">
-                        Resolve
-                      </Button>
-                    </>
-                  )}
-                </div>
-              </div>
-
-              <div className="grid grid-cols-3 gap-4 pt-4 border-t">
-                <div className="text-center">
-                  <div className="text-lg font-bold">{alert.responses}</div>
-                  <div className="text-xs text-muted-foreground">User Responses</div>
-                </div>
-                <div className="text-center">
-                  <div className="text-lg font-bold">{Math.round((alert.responses / alert.affectedUsers) * 100)}%</div>
-                  <div className="text-xs text-muted-foreground">Engagement Rate</div>
-                </div>
-                <div className="text-center">
-                  <div className="text-lg font-bold">
-                    {Math.floor((Date.now() - new Date(alert.createdAt).getTime()) / (1000 * 60 * 60))}h
+                  
+                  <div className="flex gap-2">
+                    <Button size="sm" variant="outline" className="text-xs">
+                      View Details
+                    </Button>
+                    <Button size="sm" variant="outline" className="text-xs">
+                      Edit
+                    </Button>
+                    <Button size="sm" variant="outline" className="text-xs">
+                      Resolve
+                    </Button>
                   </div>
-                  <div className="text-xs text-muted-foreground">Time Active</div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
+                </CardContent>
+              </Card>
+            ))}
+        </div>
       </div>
 
-      {/* Alert Guidelines */}
-      <Alert>
-        <AlertTriangle className="h-4 w-4" />
-        <AlertDescription>
-          <strong>Alert Guidelines:</strong> Emergency alerts should be used for urgent health situations that require
-          immediate user attention. Ensure accuracy and provide clear, actionable guidance. High-severity alerts will be
-          sent via push notifications and SMS.
-        </AlertDescription>
-      </Alert>
+      {/* Recent Alerts */}
+      <div className="space-y-4">
+        <h3 className="text-lg font-semibold">Recent Alerts</h3>
+        <div className="space-y-3">
+          {mockEmergencyAlerts
+            .filter((alert) => alert.status !== "active")
+            .map((alert) => (
+              <Card key={alert.id}>
+                <CardContent className="p-4">
+                  <div className="flex items-center justify-between">
+                    <div className="flex-1">
+                      <h4 className="font-medium text-sm sm:text-base">{alert.title}</h4>
+                      <p className="text-xs sm:text-sm text-muted-foreground mt-1">
+                        {alert.location} • {alert.affectedUsers.toLocaleString()} users
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Badge
+                        variant="outline"
+                        className={`text-xs ${getSeverityColor(alert.severity)}`}
+                      >
+                        {alert.severity}
+                      </Badge>
+                      <Badge
+                        variant="outline"
+                        className={`text-xs ${getStatusColor(alert.status)}`}
+                      >
+                        {alert.status}
+                      </Badge>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+        </div>
+      </div>
     </div>
   )
 }

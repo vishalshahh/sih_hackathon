@@ -1,77 +1,82 @@
 "use client"
 
+import { useState } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Progress } from "@/components/ui/progress"
 import { Button } from "@/components/ui/button"
-import { Activity, Database, Globe, AlertTriangle, CheckCircle, Clock } from "lucide-react"
+import { Progress } from "@/components/ui/progress"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Activity, AlertTriangle, CheckCircle, Clock, RefreshCw, Server, Zap } from "lucide-react"
 
-const mockAPIStatus = [
+const mockAPIData = [
   {
-    name: "CoWIN Vaccination API",
-    endpoint: "https://cdn-api.co-vin.in/api",
+    name: "Drug Information API",
+    endpoint: "https://api.healthbot.com/drugs",
     status: "operational",
-    responseTime: 245,
-    uptime: 99.8,
-    lastCheck: "2 minutes ago",
-    dailyRequests: 1250,
-    errorRate: 0.2,
-  },
-  {
-    name: "WHO Health Data API",
-    endpoint: "https://covid19.who.int/api",
-    status: "operational",
-    responseTime: 180,
+    responseTime: 120,
     uptime: 99.9,
-    lastCheck: "1 minute ago",
-    dailyRequests: 890,
-    errorRate: 0.1,
+    lastChecked: "2024-01-15T10:30:00Z",
+    requests: 15420,
+    errors: 12,
   },
   {
-    name: "RxNorm Drug Database",
-    endpoint: "https://rxnav.nlm.nih.gov/REST",
+    name: "Symptom Checker API",
+    endpoint: "https://api.healthbot.com/symptoms",
     status: "degraded",
-    responseTime: 1200,
-    uptime: 97.5,
-    lastCheck: "3 minutes ago",
-    dailyRequests: 2100,
-    errorRate: 2.5,
+    responseTime: 850,
+    uptime: 98.5,
+    lastChecked: "2024-01-15T10:30:00Z",
+    requests: 8934,
+    errors: 45,
   },
   {
-    name: "FDA Drug Information",
-    endpoint: "https://api.fda.gov",
+    name: "Vaccination Schedule API",
+    endpoint: "https://api.healthbot.com/vaccination",
     status: "operational",
-    responseTime: 320,
-    uptime: 99.5,
-    lastCheck: "1 minute ago",
-    dailyRequests: 650,
-    errorRate: 0.5,
+    responseTime: 95,
+    uptime: 99.8,
+    lastChecked: "2024-01-15T10:30:00Z",
+    requests: 3200,
+    errors: 3,
   },
   {
-    name: "Healthcare Provider Directory",
-    endpoint: "https://api.healthcare.gov",
-    status: "maintenance",
-    responseTime: 0,
-    uptime: 95.2,
-    lastCheck: "15 minutes ago",
-    dailyRequests: 420,
-    errorRate: 0,
+    name: "Emergency Alerts API",
+    endpoint: "https://api.healthbot.com/alerts",
+    status: "operational",
+    responseTime: 200,
+    uptime: 99.9,
+    lastChecked: "2024-01-15T10:30:00Z",
+    requests: 450,
+    errors: 1,
+  },
+]
+
+const mockRecentErrors = [
+  {
+    id: "error_001",
+    api: "Symptom Checker API",
+    error: "Timeout after 5 seconds",
+    timestamp: "2024-01-15T10:25:00Z",
+    severity: "medium",
+  },
+  {
+    id: "error_002",
+    api: "Drug Information API",
+    error: "Rate limit exceeded",
+    timestamp: "2024-01-15T09:45:00Z",
+    severity: "low",
+  },
+  {
+    id: "error_003",
+    api: "Symptom Checker API",
+    error: "Database connection failed",
+    timestamp: "2024-01-15T08:30:00Z",
+    severity: "high",
   },
 ]
 
 export function HealthAPIMonitor() {
-  const getStatusIcon = (status: string) => {
-    switch (status) {
-      case "operational":
-        return <CheckCircle className="w-4 h-4 text-green-600" />
-      case "degraded":
-        return <AlertTriangle className="w-4 h-4 text-yellow-600" />
-      case "maintenance":
-        return <Clock className="w-4 h-4 text-blue-600" />
-      default:
-        return <AlertTriangle className="w-4 h-4 text-red-600" />
-    }
-  }
+  const [isRefreshing, setIsRefreshing] = useState(false)
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -79,78 +84,99 @@ export function HealthAPIMonitor() {
         return "bg-green-100 text-green-800"
       case "degraded":
         return "bg-yellow-100 text-yellow-800"
-      case "maintenance":
-        return "bg-blue-100 text-blue-800"
-      default:
+      case "outage":
         return "bg-red-100 text-red-800"
+      default:
+        return "bg-gray-100 text-gray-800"
     }
   }
 
-  const getResponseTimeColor = (time: number) => {
-    if (time < 300) return "text-green-600"
-    if (time < 800) return "text-yellow-600"
-    return "text-red-600"
+  const getSeverityColor = (severity: string) => {
+    switch (severity) {
+      case "high":
+        return "bg-red-100 text-red-800"
+      case "medium":
+        return "bg-yellow-100 text-yellow-800"
+      case "low":
+        return "bg-blue-100 text-blue-800"
+      default:
+        return "bg-gray-100 text-gray-800"
+    }
+  }
+
+  const handleRefresh = () => {
+    setIsRefreshing(true)
+    setTimeout(() => setIsRefreshing(false), 2000)
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
+    <div className="space-y-4 sm:space-y-6">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h2 className="text-2xl font-bold">Health API Monitor</h2>
-          <p className="text-muted-foreground">Monitor external health API integrations and performance</p>
+          <h2 className="text-xl sm:text-2xl font-bold">Health API Monitor</h2>
+          <p className="text-sm sm:text-base text-muted-foreground">Monitor API performance and health status</p>
         </div>
-        <Button variant="outline">
-          <Activity className="w-4 h-4 mr-2" />
-          Refresh Status
+        <Button onClick={handleRefresh} disabled={isRefreshing} className="text-sm">
+          <RefreshCw className={`w-4 h-4 mr-2 ${isRefreshing ? "animate-spin" : ""}`} />
+          Refresh
         </Button>
       </div>
 
-      {/* Overall Status */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+      {/* API Status Overview */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">APIs Operational</CardTitle>
-            <CheckCircle className="h-4 w-4 text-green-600" />
+            <CardTitle className="text-xs sm:text-sm font-medium">Total APIs</CardTitle>
+            <Server className="h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">3/5</div>
-            <p className="text-xs text-muted-foreground">60% operational</p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Avg Response Time</CardTitle>
-            <Activity className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">389ms</div>
+            <div className="text-lg sm:text-2xl font-bold">{mockAPIData.length}</div>
             <p className="text-xs text-muted-foreground">
-              <span className="text-yellow-600">+15%</span> from yesterday
+              <span className="text-green-600">3 operational</span>
             </p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Daily Requests</CardTitle>
-            <Database className="h-4 w-4 text-muted-foreground" />
+            <CardTitle className="text-xs sm:text-sm font-medium">Avg Response Time</CardTitle>
+            <Zap className="h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">5,310</div>
+            <div className="text-lg sm:text-2xl font-bold">
+              {Math.round(mockAPIData.reduce((acc, api) => acc + api.responseTime, 0) / mockAPIData.length)}ms
+            </div>
             <p className="text-xs text-muted-foreground">
-              <span className="text-green-600">+8.2%</span> from yesterday
+              <span className="text-green-600">-15ms</span> from yesterday
             </p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Error Rate</CardTitle>
-            <AlertTriangle className="h-4 w-4 text-muted-foreground" />
+            <CardTitle className="text-xs sm:text-sm font-medium">Total Requests</CardTitle>
+            <Activity className="h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">0.66%</div>
+            <div className="text-lg sm:text-2xl font-bold">
+              {mockAPIData.reduce((acc, api) => acc + api.requests, 0).toLocaleString()}
+            </div>
+            <p className="text-xs text-muted-foreground">
+              <span className="text-green-600">+8.2%</span> from last week
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-xs sm:text-sm font-medium">Error Rate</CardTitle>
+            <AlertTriangle className="h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-lg sm:text-2xl font-bold">
+              {((mockAPIData.reduce((acc, api) => acc + api.errors, 0) / 
+                 mockAPIData.reduce((acc, api) => acc + api.requests, 0)) * 100).toFixed(2)}%
+            </div>
             <p className="text-xs text-muted-foreground">
               <span className="text-red-600">+0.1%</span> from yesterday
             </p>
@@ -158,95 +184,146 @@ export function HealthAPIMonitor() {
         </Card>
       </div>
 
-      {/* API Status List */}
-      <div className="space-y-4">
-        {mockAPIStatus.map((api, index) => (
-          <Card key={index}>
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between mb-4">
-                <div className="flex items-center gap-3">
-                  {getStatusIcon(api.status)}
-                  <div>
-                    <h3 className="font-semibold">{api.name}</h3>
-                    <p className="text-sm text-muted-foreground">{api.endpoint}</p>
+      <Tabs defaultValue="apis" className="space-y-4 sm:space-y-6">
+        <TabsList className="grid w-full grid-cols-2 sm:grid-cols-3">
+          <TabsTrigger value="apis" className="text-xs sm:text-sm">API Status</TabsTrigger>
+          <TabsTrigger value="errors" className="text-xs sm:text-sm">Recent Errors</TabsTrigger>
+          <TabsTrigger value="performance" className="text-xs sm:text-sm">Performance</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="apis" className="space-y-4">
+          <div className="grid grid-cols-1 gap-4">
+            {mockAPIData.map((api) => (
+              <Card key={api.name}>
+                <CardHeader>
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <CardTitle className="text-base sm:text-lg">{api.name}</CardTitle>
+                      <p className="text-xs sm:text-sm text-muted-foreground">{api.endpoint}</p>
+                    </div>
+                    <Badge
+                      variant="outline"
+                      className={`text-xs ${getStatusColor(api.status)}`}
+                    >
+                      {api.status}
+                    </Badge>
                   </div>
-                </div>
-                <div className="flex items-center gap-3">
-                  <Badge className={getStatusColor(api.status)}>{api.status}</Badge>
-                  <Button variant="outline" size="sm">
-                    Test API
-                  </Button>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-                <div>
-                  <p className="text-sm font-medium mb-1">Response Time</p>
-                  <p className={`text-lg font-bold ${getResponseTimeColor(api.responseTime)}`}>
-                    {api.responseTime > 0 ? `${api.responseTime}ms` : "N/A"}
-                  </p>
-                </div>
-
-                <div>
-                  <p className="text-sm font-medium mb-1">Uptime</p>
-                  <div className="space-y-1">
-                    <p className="text-lg font-bold">{api.uptime}%</p>
-                    <Progress value={api.uptime} className="h-1" />
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-sm">
+                    <div>
+                      <p className="text-muted-foreground">Response Time</p>
+                      <p className="font-medium">{api.responseTime}ms</p>
+                    </div>
+                    <div>
+                      <p className="text-muted-foreground">Uptime</p>
+                      <p className="font-medium">{api.uptime}%</p>
+                    </div>
+                    <div>
+                      <p className="text-muted-foreground">Requests</p>
+                      <p className="font-medium">{api.requests.toLocaleString()}</p>
+                    </div>
+                    <div>
+                      <p className="text-muted-foreground">Errors</p>
+                      <p className="font-medium text-red-600">{api.errors}</p>
+                    </div>
                   </div>
-                </div>
+                  
+                  <div className="mt-4">
+                    <div className="flex items-center justify-between text-xs text-muted-foreground mb-2">
+                      <span>Uptime</span>
+                      <span>{api.uptime}%</span>
+                    </div>
+                    <Progress value={api.uptime} className="h-2" />
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </TabsContent>
 
-                <div>
-                  <p className="text-sm font-medium mb-1">Daily Requests</p>
-                  <p className="text-lg font-bold">{api.dailyRequests.toLocaleString()}</p>
-                </div>
-
-                <div>
-                  <p className="text-sm font-medium mb-1">Error Rate</p>
-                  <p className={`text-lg font-bold ${api.errorRate > 1 ? "text-red-600" : "text-green-600"}`}>
-                    {api.errorRate}%
-                  </p>
-                </div>
-
-                <div>
-                  <p className="text-sm font-medium mb-1">Last Check</p>
-                  <p className="text-sm text-muted-foreground">{api.lastCheck}</p>
-                </div>
+        <TabsContent value="errors" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base sm:text-lg">Recent Errors</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-3">
+                {mockRecentErrors.map((error) => (
+                  <div key={error.id} className="flex items-center justify-between p-3 border rounded-lg">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-1">
+                        <h4 className="font-medium text-sm sm:text-base">{error.api}</h4>
+                        <Badge
+                          variant="outline"
+                          className={`text-xs ${getSeverityColor(error.severity)}`}
+                        >
+                          {error.severity}
+                        </Badge>
+                      </div>
+                      <p className="text-xs sm:text-sm text-muted-foreground">{error.error}</p>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        {new Date(error.timestamp).toLocaleString()}
+                      </p>
+                    </div>
+                    <Button size="sm" variant="outline" className="text-xs">
+                      View Details
+                    </Button>
+                  </div>
+                ))}
               </div>
             </CardContent>
           </Card>
-        ))}
-      </div>
+        </TabsContent>
 
-      {/* API Usage Trends */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Globe className="w-5 h-5 text-primary" />
-            API Usage Trends
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="p-4 bg-muted rounded-lg">
-              <h4 className="font-medium mb-2">Most Used API</h4>
-              <p className="text-sm text-muted-foreground">RxNorm Drug Database</p>
-              <p className="text-lg font-bold">2,100 requests/day</p>
-            </div>
+        <TabsContent value="performance" className="space-y-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-base sm:text-lg">Response Time Trends</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3">
+                  {mockAPIData.map((api) => (
+                    <div key={api.name}>
+                      <div className="flex items-center justify-between text-sm mb-1">
+                        <span>{api.name}</span>
+                        <span className="font-medium">{api.responseTime}ms</span>
+                      </div>
+                      <Progress 
+                        value={Math.min((api.responseTime / 1000) * 100, 100)} 
+                        className="h-2" 
+                      />
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
 
-            <div className="p-4 bg-muted rounded-lg">
-              <h4 className="font-medium mb-2">Fastest API</h4>
-              <p className="text-sm text-muted-foreground">WHO Health Data API</p>
-              <p className="text-lg font-bold">180ms avg</p>
-            </div>
-
-            <div className="p-4 bg-muted rounded-lg">
-              <h4 className="font-medium mb-2">Most Reliable</h4>
-              <p className="text-sm text-muted-foreground">WHO Health Data API</p>
-              <p className="text-lg font-bold">99.9% uptime</p>
-            </div>
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-base sm:text-lg">Error Rate by API</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3">
+                  {mockAPIData.map((api) => {
+                    const errorRate = (api.errors / api.requests) * 100
+                    return (
+                      <div key={api.name}>
+                        <div className="flex items-center justify-between text-sm mb-1">
+                          <span>{api.name}</span>
+                          <span className="font-medium">{errorRate.toFixed(2)}%</span>
+                        </div>
+                        <Progress value={errorRate} className="h-2" />
+                      </div>
+                    )
+                  })}
+                </div>
+              </CardContent>
+            </Card>
           </div>
-        </CardContent>
-      </Card>
+        </TabsContent>
+      </Tabs>
     </div>
   )
 }

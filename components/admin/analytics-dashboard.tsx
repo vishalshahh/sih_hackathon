@@ -50,16 +50,16 @@ const mockAnalytics = {
 
 export function AnalyticsDashboard() {
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       {/* Key Metrics */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Users</CardTitle>
-            <Users className="h-4 w-4 text-muted-foreground" />
+            <CardTitle className="text-xs sm:text-sm font-medium">Total Users</CardTitle>
+            <Users className="h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{mockAnalytics.totalUsers.toLocaleString()}</div>
+            <div className="text-lg sm:text-2xl font-bold">{mockAnalytics.totalUsers.toLocaleString()}</div>
             <p className="text-xs text-muted-foreground">
               <span className="text-green-600">+12.5%</span> from last month
             </p>
@@ -68,11 +68,11 @@ export function AnalyticsDashboard() {
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Conversations</CardTitle>
-            <MessageSquare className="h-4 w-4 text-muted-foreground" />
+            <CardTitle className="text-xs sm:text-sm font-medium">Conversations</CardTitle>
+            <MessageSquare className="h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{mockAnalytics.totalConversations.toLocaleString()}</div>
+            <div className="text-lg sm:text-2xl font-bold">{mockAnalytics.totalConversations.toLocaleString()}</div>
             <p className="text-xs text-muted-foreground">
               <span className="text-green-600">+8.2%</span> from last week
             </p>
@@ -81,11 +81,11 @@ export function AnalyticsDashboard() {
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Emergency Alerts</CardTitle>
-            <AlertTriangle className="h-4 w-4 text-muted-foreground" />
+            <CardTitle className="text-xs sm:text-sm font-medium">Emergency Alerts</CardTitle>
+            <AlertTriangle className="h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{mockAnalytics.emergencyAlerts}</div>
+            <div className="text-lg sm:text-2xl font-bold">{mockAnalytics.emergencyAlerts}</div>
             <p className="text-xs text-muted-foreground">
               <span className="text-red-600">+3</span> in last 24h
             </p>
@@ -94,130 +94,160 @@ export function AnalyticsDashboard() {
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Intent Accuracy</CardTitle>
-            <TrendingUp className="h-4 w-4 text-muted-foreground" />
+            <CardTitle className="text-xs sm:text-sm font-medium">Intent Accuracy</CardTitle>
+            <TrendingUp className="h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{mockAnalytics.intentAccuracy}%</div>
-            <Progress value={mockAnalytics.intentAccuracy} className="mt-2" />
+            <div className="text-lg sm:text-2xl font-bold">{mockAnalytics.intentAccuracy}%</div>
+            <p className="text-xs text-muted-foreground">
+              <span className="text-green-600">+2.1%</span> improvement
+            </p>
           </CardContent>
         </Card>
       </div>
 
-      {/* Charts */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Daily Usage Trend */}
+      {/* Charts Section */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
+        {/* Daily Usage Chart */}
         <Card>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Activity className="w-5 h-5 text-primary" />
-              Daily Usage Trend
-            </CardTitle>
+            <CardTitle className="text-base sm:text-lg">Daily Usage Trends</CardTitle>
           </CardHeader>
           <CardContent>
-            <ResponsiveContainer width="100%" height={300}>
-              <LineChart data={mockAnalytics.dailyUsage}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="date" />
-                <YAxis />
-                <Tooltip />
-                <Line type="monotone" dataKey="conversations" stroke="#059669" strokeWidth={2} />
-                <Line type="monotone" dataKey="users" stroke="#10b981" strokeWidth={2} />
-              </LineChart>
-            </ResponsiveContainer>
+            <div className="h-64 sm:h-80">
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart data={mockAnalytics.dailyUsage}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="date" />
+                  <YAxis />
+                  <Tooltip />
+                  <Line type="monotone" dataKey="conversations" stroke="#3b82f6" strokeWidth={2} />
+                  <Line type="monotone" dataKey="users" stroke="#10b981" strokeWidth={2} />
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
           </CardContent>
         </Card>
 
-        {/* Intent Distribution */}
+        {/* Language Distribution */}
         <Card>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <MessageSquare className="w-5 h-5 text-primary" />
-              Intent Distribution
-            </CardTitle>
+            <CardTitle className="text-base sm:text-lg">Language Distribution</CardTitle>
           </CardHeader>
           <CardContent>
-            <ResponsiveContainer width="100%" height={300}>
-              <PieChart>
-                <Pie
-                  data={mockAnalytics.intentDistribution}
-                  cx="50%"
-                  cy="50%"
-                  labelLine={false}
-                  label={({ name, percentage }) => `${name} ${percentage}%`}
-                  outerRadius={80}
-                  fill="#8884d8"
-                  dataKey="count"
-                >
-                  {mockAnalytics.intentDistribution.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={entry.color} />
-                  ))}
-                </Pie>
-                <Tooltip />
-              </PieChart>
-            </ResponsiveContainer>
+            <div className="space-y-4">
+              <div className="h-48 sm:h-64">
+                <ResponsiveContainer width="100%" height="100%">
+                  <PieChart>
+                    <Pie
+                      data={mockAnalytics.languageDistribution}
+                      cx="50%"
+                      cy="50%"
+                      innerRadius={40}
+                      outerRadius={80}
+                      paddingAngle={5}
+                      dataKey="users"
+                    >
+                      {mockAnalytics.languageDistribution.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={`hsl(${index * 60}, 70%, 50%)`} />
+                      ))}
+                    </Pie>
+                    <Tooltip />
+                  </PieChart>
+                </ResponsiveContainer>
+              </div>
+              <div className="space-y-2">
+                {mockAnalytics.languageDistribution.map((lang, index) => (
+                  <div key={lang.language} className="flex items-center justify-between text-sm">
+                    <div className="flex items-center gap-2">
+                      <div
+                        className="w-3 h-3 rounded-full"
+                        style={{ backgroundColor: `hsl(${index * 60}, 70%, 50%)` }}
+                      />
+                      <span>{lang.language}</span>
+                    </div>
+                    <span className="font-medium">{lang.percentage}%</span>
+                  </div>
+                ))}
+              </div>
+            </div>
           </CardContent>
         </Card>
       </div>
 
-      {/* Language Distribution */}
+      {/* Intent Distribution */}
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Globe className="w-5 h-5 text-primary" />
-            Language Distribution
-          </CardTitle>
+          <CardTitle className="text-base sm:text-lg">Intent Distribution</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
-            {mockAnalytics.languageDistribution.map((lang, index) => (
-              <div key={index} className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <Badge variant="outline">{lang.language}</Badge>
-                  <span className="text-sm text-muted-foreground">{lang.users.toLocaleString()} users</span>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {mockAnalytics.intentDistribution.map((intent) => (
+                <div key={intent.intent} className="flex items-center justify-between p-3 rounded-lg border">
+                  <div className="flex items-center gap-3">
+                    <div
+                      className="w-4 h-4 rounded-full"
+                      style={{ backgroundColor: intent.color }}
+                    />
+                    <span className="text-sm font-medium">{intent.intent}</span>
+                  </div>
+                  <div className="text-right">
+                    <div className="text-sm font-bold">{intent.count.toLocaleString()}</div>
+                    <div className="text-xs text-muted-foreground">
+                      {((intent.count / mockAnalytics.totalConversations) * 100).toFixed(1)}%
+                    </div>
+                  </div>
                 </div>
-                <div className="flex items-center gap-2">
-                  <Progress value={lang.percentage} className="w-20" />
-                  <span className="text-sm font-medium">{lang.percentage}%</span>
-                </div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
         </CardContent>
       </Card>
 
       {/* Performance Metrics */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
         <Card>
           <CardHeader>
-            <CardTitle className="text-sm">Average Response Time</CardTitle>
+            <CardTitle className="text-base sm:text-lg">Response Time Performance</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{mockAnalytics.avgResponseTime}s</div>
-            <Progress value={85} className="mt-2" />
-            <p className="text-xs text-muted-foreground mt-1">Target: &lt;2s</p>
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <span className="text-sm">Average Response Time</span>
+                <span className="text-lg font-bold">{mockAnalytics.avgResponseTime}s</span>
+              </div>
+              <Progress value={85} className="h-2" />
+              <p className="text-xs text-muted-foreground">
+                Target: &lt; 2 seconds (85% of responses)
+              </p>
+            </div>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader>
-            <CardTitle className="text-sm">User Satisfaction</CardTitle>
+            <CardTitle className="text-base sm:text-lg">System Health</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">4.6/5</div>
-            <Progress value={92} className="mt-2" />
-            <p className="text-xs text-muted-foreground mt-1">Based on 2,341 ratings</p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-sm">Resolution Rate</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">87.3%</div>
-            <Progress value={87.3} className="mt-2" />
-            <p className="text-xs text-muted-foreground mt-1">Issues resolved without escalation</p>
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Activity className="w-4 h-4 text-green-600" />
+                  <span className="text-sm">API Status</span>
+                </div>
+                <Badge variant="outline" className="bg-green-100 text-green-800">
+                  Operational
+                </Badge>
+              </div>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Globe className="w-4 h-4 text-blue-600" />
+                  <span className="text-sm">Uptime</span>
+                </div>
+                <span className="text-sm font-medium">99.9%</span>
+              </div>
+            </div>
           </CardContent>
         </Card>
       </div>

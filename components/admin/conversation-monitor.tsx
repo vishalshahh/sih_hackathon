@@ -6,190 +6,255 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { ScrollArea } from "@/components/ui/scroll-area"
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Search, Filter, Download, AlertTriangle, CheckCircle, Clock, MessageSquare } from "lucide-react"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Search, Filter, Download, MessageSquare, Clock, User, AlertTriangle } from "lucide-react"
 
 const mockConversations = [
   {
     id: "conv_001",
-    userId: "user_12345",
+    userId: "user_123",
+    userName: "John Doe",
+    language: "English",
     startTime: "2024-01-15T10:30:00Z",
-    endTime: "2024-01-15T10:35:00Z",
-    language: "en",
+    lastMessage: "2024-01-15T10:45:00Z",
+    messageCount: 12,
     intent: "symptoms_fever",
     urgencyLevel: "medium",
-    resolved: true,
-    satisfaction: 4,
-    messages: [
-      { type: "user", content: "I have a fever and headache", timestamp: "10:30:15" },
-      { type: "bot", content: "I understand you're experiencing fever and headache...", timestamp: "10:30:18" },
-      { type: "user", content: "It's been 2 days now", timestamp: "10:31:22" },
-      { type: "bot", content: "For fever lasting 2 days, I recommend...", timestamp: "10:31:25" },
-    ],
+    status: "active",
+    preview: "I've been having a high fever for the past 2 days...",
   },
   {
     id: "conv_002",
-    userId: "user_67890",
-    startTime: "2024-01-15T11:15:00Z",
-    endTime: "2024-01-15T11:18:00Z",
-    language: "hi",
-    intent: "emergency",
-    urgencyLevel: "emergency",
-    resolved: true,
-    satisfaction: 5,
-    messages: [
-      { type: "user", content: "मुझे सांस लेने में तकलीफ हो रही है", timestamp: "11:15:10" },
-      { type: "bot", content: "🚨 MEDICAL EMERGENCY DETECTED 🚨", timestamp: "11:15:12" },
-      { type: "user", content: "क्या करूं?", timestamp: "11:15:45" },
-      { type: "bot", content: "तुरंत 108 पर कॉल करें या निकटतम अस्पताल जाएं", timestamp: "11:15:47" },
-    ],
+    userId: "user_456",
+    userName: "Sarah Wilson",
+    language: "Hindi",
+    startTime: "2024-01-15T09:15:00Z",
+    lastMessage: "2024-01-15T09:30:00Z",
+    messageCount: 8,
+    intent: "medication",
+    urgencyLevel: "low",
+    status: "resolved",
+    preview: "Can you tell me about the side effects of...",
   },
   {
     id: "conv_003",
-    userId: "user_11111",
-    startTime: "2024-01-15T14:20:00Z",
-    endTime: null,
-    language: "es",
-    intent: "medication",
+    userId: "user_789",
+    userName: "Ahmed Hassan",
+    language: "Arabic",
+    startTime: "2024-01-15T08:45:00Z",
+    lastMessage: "2024-01-15T09:00:00Z",
+    messageCount: 15,
+    intent: "emergency",
+    urgencyLevel: "emergency",
+    status: "active",
+    preview: "I'm experiencing severe chest pain and shortness of breath...",
+  },
+  {
+    id: "conv_004",
+    userId: "user_321",
+    userName: "Maria Garcia",
+    language: "Spanish",
+    startTime: "2024-01-15T07:20:00Z",
+    lastMessage: "2024-01-15T07:35:00Z",
+    messageCount: 6,
+    intent: "vaccination",
     urgencyLevel: "low",
-    resolved: false,
-    satisfaction: null,
-    messages: [
-      { type: "user", content: "¿Puedo tomar ibuprofeno con paracetamol?", timestamp: "14:20:05" },
-      { type: "bot", content: "Puedo ayudarte con información sobre medicamentos...", timestamp: "14:20:08" },
-      { type: "user", content: "Tengo dolor de espalda", timestamp: "14:21:15" },
-    ],
+    status: "resolved",
+    preview: "When should I get my flu vaccination?",
+  },
+  {
+    id: "conv_005",
+    userId: "user_555",
+    userName: "Robert Smith",
+    language: "English",
+    startTime: "2024-01-15T11:00:00Z",
+    lastMessage: "2024-01-15T11:15:00Z",
+    messageCount: 8,
+    intent: "emergency",
+    urgencyLevel: "emergency",
+    status: "active",
+    preview: "I think I'm having a heart attack, severe chest pain...",
+  },
+  {
+    id: "conv_006",
+    userId: "user_666",
+    userName: "Lisa Johnson",
+    language: "English",
+    startTime: "2024-01-15T09:30:00Z",
+    lastMessage: "2024-01-15T09:45:00Z",
+    messageCount: 10,
+    intent: "emergency",
+    urgencyLevel: "high",
+    status: "active",
+    preview: "My child is unconscious and not breathing properly...",
   },
 ]
 
 export function ConversationMonitor() {
   const [searchTerm, setSearchTerm] = useState("")
-  const [selectedConversation, setSelectedConversation] = useState<string | null>(null)
   const [filterStatus, setFilterStatus] = useState("all")
+  const [selectedConversation, setSelectedConversation] = useState<string | null>(null)
 
   const filteredConversations = mockConversations.filter((conv) => {
-    const matchesSearch =
-      conv.userId.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      conv.intent.toLowerCase().includes(searchTerm.toLowerCase())
-
-    const matchesFilter =
-      filterStatus === "all" ||
-      (filterStatus === "active" && !conv.resolved) ||
-      (filterStatus === "resolved" && conv.resolved) ||
-      (filterStatus === "emergency" && conv.urgencyLevel === "emergency")
-
-    return matchesSearch && matchesFilter
+    const matchesSearch = conv.userName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         conv.preview.toLowerCase().includes(searchTerm.toLowerCase())
+    
+    let matchesStatus = true
+    if (filterStatus === "all") {
+      matchesStatus = true
+    } else if (filterStatus === "active") {
+      matchesStatus = conv.status === "active"
+    } else if (filterStatus === "resolved") {
+      matchesStatus = conv.status === "resolved"
+    } else if (filterStatus === "emergency") {
+      matchesStatus = conv.urgencyLevel === "emergency" || conv.urgencyLevel === "high"
+    }
+    
+    return matchesSearch && matchesStatus
   })
 
   const selectedConv = mockConversations.find((conv) => conv.id === selectedConversation)
 
-  const getUrgencyColor = (level: string) => {
-    switch (level) {
+  const getUrgencyColor = (urgency: string) => {
+    switch (urgency) {
       case "emergency":
         return "bg-red-100 text-red-800 border-red-200"
       case "high":
         return "bg-orange-100 text-orange-800 border-orange-200"
       case "medium":
         return "bg-yellow-100 text-yellow-800 border-yellow-200"
+      case "low":
+        return "bg-green-100 text-green-800 border-green-200"
       default:
-        return "bg-blue-100 text-blue-800 border-blue-200"
+        return "bg-gray-100 text-gray-800 border-gray-200"
+    }
+  }
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case "active":
+        return "bg-blue-100 text-blue-800"
+      case "resolved":
+        return "bg-green-100 text-green-800"
+      case "escalated":
+        return "bg-orange-100 text-orange-800"
+      default:
+        return "bg-gray-100 text-gray-800"
     }
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
+    <div className="space-y-4 sm:space-y-6">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h2 className="text-2xl font-bold">Conversation Monitor</h2>
-          <p className="text-muted-foreground">Monitor and analyze user conversations in real-time</p>
+          <h2 className="text-xl sm:text-2xl font-bold">Conversation Monitor</h2>
+          <p className="text-sm sm:text-base text-muted-foreground">Monitor and analyze user conversations in real-time</p>
         </div>
         <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm">
-            <Download className="w-4 h-4 mr-2" />
-            Export
+          <Button variant="outline" size="sm" className="text-xs sm:text-sm">
+            <Download className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
+            <span className="hidden sm:inline">Export</span>
           </Button>
-          <Button variant="outline" size="sm">
-            <Filter className="w-4 h-4 mr-2" />
-            Filter
+          <Button variant="outline" size="sm" className="text-xs sm:text-sm">
+            <Filter className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
+            <span className="hidden sm:inline">Filter</span>
           </Button>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
         {/* Conversation List */}
         <div className="lg:col-span-1 space-y-4">
           <div className="flex items-center gap-2">
             <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-3 h-3 sm:w-4 sm:h-4" />
               <Input
                 placeholder="Search conversations..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10"
+                className="pl-8 sm:pl-10 text-sm"
               />
             </div>
           </div>
 
           <Tabs value={filterStatus} onValueChange={setFilterStatus}>
-            <TabsList className="grid w-full grid-cols-4">
-              <TabsTrigger value="all">All</TabsTrigger>
-              <TabsTrigger value="active">Active</TabsTrigger>
-              <TabsTrigger value="resolved">Resolved</TabsTrigger>
-              <TabsTrigger value="emergency">Emergency</TabsTrigger>
+            <TabsList className="grid w-full grid-cols-2 sm:grid-cols-4">
+              <TabsTrigger value="all" className="text-xs">All</TabsTrigger>
+              <TabsTrigger value="active" className="text-xs">Active</TabsTrigger>
+              <TabsTrigger value="resolved" className="text-xs">Resolved</TabsTrigger>
+              <TabsTrigger value="emergency" className="text-xs">Emergency</TabsTrigger>
             </TabsList>
           </Tabs>
 
-          <ScrollArea className="h-[600px]">
+          <ScrollArea className="h-96 sm:h-[600px]">
             <div className="space-y-2">
-              {filteredConversations.map((conversation) => (
-                <Card
-                  key={conversation.id}
-                  className={`cursor-pointer transition-colors ${
-                    selectedConversation === conversation.id ? "ring-2 ring-primary" : ""
-                  }`}
-                  onClick={() => setSelectedConversation(conversation.id)}
-                >
-                  <CardContent className="p-4">
-                    <div className="space-y-2">
-                      <div className="flex items-center justify-between">
-                        <span className="font-medium text-sm">{conversation.userId}</span>
-                        <div className="flex items-center gap-1">
-                          {conversation.resolved ? (
-                            <CheckCircle className="w-4 h-4 text-green-600" />
-                          ) : (
-                            <Clock className="w-4 h-4 text-yellow-600" />
-                          )}
-                          {conversation.urgencyLevel === "emergency" && (
-                            <AlertTriangle className="w-4 h-4 text-red-600" />
-                          )}
+              {filteredConversations.length > 0 ? (
+                filteredConversations.map((conversation) => (
+                  <Card
+                    key={conversation.id}
+                    className={`cursor-pointer transition-colors ${
+                      selectedConversation === conversation.id
+                        ? "ring-2 ring-primary"
+                        : "hover:bg-muted/50"
+                    }`}
+                    onClick={() => setSelectedConversation(conversation.id)}
+                  >
+                    <CardContent className="p-3 sm:p-4">
+                      <div className="space-y-2">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            <User className="w-3 h-3 sm:w-4 sm:h-4 text-muted-foreground" />
+                            <span className="text-sm font-medium">{conversation.userName}</span>
+                          </div>
+                          <Badge
+                            variant="outline"
+                            className={`text-xs ${getUrgencyColor(conversation.urgencyLevel)}`}
+                          >
+                            {conversation.urgencyLevel}
+                          </Badge>
+                        </div>
+                        
+                        <p className="text-xs sm:text-sm text-muted-foreground line-clamp-2">
+                          {conversation.preview}
+                        </p>
+                        
+                        <div className="flex items-center justify-between text-xs text-muted-foreground">
+                          <div className="flex items-center gap-1">
+                            <Clock className="w-3 h-3" />
+                            <span>{new Date(conversation.lastMessage).toLocaleTimeString()}</span>
+                          </div>
+                          <div className="flex items-center gap-1">
+                            <MessageSquare className="w-3 h-3" />
+                            <span>{conversation.messageCount}</span>
+                          </div>
+                        </div>
+                        
+                        <div className="flex items-center justify-between">
+                          <Badge variant="secondary" className="text-xs">
+                            {conversation.intent}
+                          </Badge>
+                          <Badge
+                            variant="outline"
+                            className={`text-xs ${getStatusColor(conversation.status)}`}
+                          >
+                            {conversation.status}
+                          </Badge>
                         </div>
                       </div>
-
-                      <div className="flex items-center gap-2">
-                        <Badge variant="outline" className="text-xs">
-                          {conversation.language}
-                        </Badge>
-                        <Badge variant="outline" className={`text-xs ${getUrgencyColor(conversation.urgencyLevel)}`}>
-                          {conversation.urgencyLevel}
-                        </Badge>
-                      </div>
-
-                      <p className="text-xs text-muted-foreground">Intent: {conversation.intent.replace("_", " ")}</p>
-
-                      <p className="text-xs text-muted-foreground">
-                        {new Date(conversation.startTime).toLocaleString()}
-                      </p>
-
-                      {conversation.satisfaction && (
-                        <div className="flex items-center gap-1">
-                          <span className="text-xs text-muted-foreground">Rating:</span>
-                          <span className="text-xs font-medium">{conversation.satisfaction}/5</span>
-                        </div>
-                      )}
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
+                    </CardContent>
+                  </Card>
+                ))
+              ) : (
+                <div className="flex flex-col items-center justify-center h-64 text-center">
+                  <AlertTriangle className="w-12 h-12 text-muted-foreground mb-4" />
+                  <p className="text-sm text-muted-foreground">
+                    {filterStatus === "emergency" 
+                      ? "No emergency conversations found"
+                      : `No ${filterStatus} conversations found`
+                    }
+                  </p>
+                </div>
+              )}
             </div>
           </ScrollArea>
         </div>
@@ -199,69 +264,83 @@ export function ConversationMonitor() {
           {selectedConv ? (
             <Card>
               <CardHeader>
-                <CardTitle className="flex items-center justify-between">
-                  <span>Conversation Details</span>
-                  <div className="flex items-center gap-2">
-                    <Badge variant="outline">{selectedConv.language}</Badge>
-                    <Badge className={getUrgencyColor(selectedConv.urgencyLevel)}>{selectedConv.urgencyLevel}</Badge>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <CardTitle className="text-base sm:text-lg">{selectedConv.userName}</CardTitle>
+                    <p className="text-sm text-muted-foreground">
+                      Conversation ID: {selectedConv.id}
+                    </p>
                   </div>
-                </CardTitle>
+                  <div className="flex items-center gap-2">
+                    <Badge
+                      variant="outline"
+                      className={`text-xs ${getUrgencyColor(selectedConv.urgencyLevel)}`}
+                    >
+                      {selectedConv.urgencyLevel}
+                    </Badge>
+                    <Badge
+                      variant="outline"
+                      className={`text-xs ${getStatusColor(selectedConv.status)}`}
+                    >
+                      {selectedConv.status}
+                    </Badge>
+                  </div>
+                </div>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="grid grid-cols-2 gap-4 text-sm">
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-sm">
                   <div>
-                    <span className="font-medium">User ID:</span> {selectedConv.userId}
+                    <p className="text-muted-foreground">Language</p>
+                    <p className="font-medium">{selectedConv.language}</p>
                   </div>
                   <div>
-                    <span className="font-medium">Intent:</span> {selectedConv.intent}
+                    <p className="text-muted-foreground">Messages</p>
+                    <p className="font-medium">{selectedConv.messageCount}</p>
                   </div>
                   <div>
-                    <span className="font-medium">Start Time:</span> {new Date(selectedConv.startTime).toLocaleString()}
+                    <p className="text-muted-foreground">Started</p>
+                    <p className="font-medium">
+                      {new Date(selectedConv.startTime).toLocaleTimeString()}
+                    </p>
                   </div>
                   <div>
-                    <span className="font-medium">Status:</span> {selectedConv.resolved ? "Resolved" : "Active"}
+                    <p className="text-muted-foreground">Last Activity</p>
+                    <p className="font-medium">
+                      {new Date(selectedConv.lastMessage).toLocaleTimeString()}
+                    </p>
                   </div>
                 </div>
-
+                
                 <div>
-                  <h4 className="font-medium mb-3">Messages</h4>
-                  <ScrollArea className="h-[400px] border rounded-lg p-4">
-                    <div className="space-y-4">
-                      {selectedConv.messages.map((message, index) => (
-                        <div
-                          key={index}
-                          className={`flex ${message.type === "user" ? "justify-end" : "justify-start"}`}
-                        >
-                          <div
-                            className={`max-w-[80%] rounded-lg px-3 py-2 ${
-                              message.type === "user"
-                                ? "bg-primary text-primary-foreground"
-                                : "bg-muted text-muted-foreground"
-                            }`}
-                          >
-                            <p className="text-sm">{message.content}</p>
-                            <p className="text-xs opacity-70 mt-1">{message.timestamp}</p>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </ScrollArea>
+                  <p className="text-sm text-muted-foreground mb-2">Intent Classification</p>
+                  <Badge variant="secondary" className="text-sm">
+                    {selectedConv.intent}
+                  </Badge>
                 </div>
-
-                {selectedConv.satisfaction && (
-                  <div className="flex items-center justify-between p-3 bg-muted rounded-lg">
-                    <span className="text-sm font-medium">User Satisfaction:</span>
-                    <Badge variant="secondary">{selectedConv.satisfaction}/5 stars</Badge>
+                
+                <div>
+                  <p className="text-sm text-muted-foreground mb-2">Conversation Preview</p>
+                  <div className="bg-muted p-3 rounded-lg">
+                    <p className="text-sm">{selectedConv.preview}</p>
+                  </div>
+                </div>
+                
+                {selectedConv.urgencyLevel === "emergency" && (
+                  <div className="flex items-center gap-2 p-3 bg-red-50 border border-red-200 rounded-lg">
+                    <AlertTriangle className="w-4 h-4 text-red-600" />
+                    <p className="text-sm text-red-800">
+                      Emergency conversation - consider immediate escalation
+                    </p>
                   </div>
                 )}
               </CardContent>
             </Card>
           ) : (
             <Card>
-              <CardContent className="flex items-center justify-center h-[600px]">
-                <div className="text-center text-muted-foreground">
-                  <MessageSquare className="w-12 h-12 mx-auto mb-4 opacity-50" />
-                  <p>Select a conversation to view details</p>
+              <CardContent className="flex items-center justify-center h-96">
+                <div className="text-center">
+                  <MessageSquare className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+                  <p className="text-muted-foreground">Select a conversation to view details</p>
                 </div>
               </CardContent>
             </Card>
